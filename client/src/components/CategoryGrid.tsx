@@ -19,7 +19,6 @@ export default function CategoryGrid({
   onSelectCategory 
 }: CategoryGridProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
   const [filteredCategories, setFilteredCategories] = useState<CategoryUI[]>([]);
 
   // استعلام للحصول على التصنيفات من الخادم
@@ -45,13 +44,8 @@ export default function CategoryGrid({
       );
     }
 
-    // تطبيق مصفي الصعوبة
-    if (difficultyFilter) {
-      result = result.filter(category => category.difficultyLevel === difficultyFilter);
-    }
-
     setFilteredCategories(result);
-  }, [categories, searchTerm, difficultyFilter]);
+  }, [categories, searchTerm]);
 
   // معالجة تحديد الفئة عند النقر عليها
   const handleSelectCategory = (id: number) => {
@@ -110,23 +104,7 @@ export default function CategoryGrid({
             )}
           </div>
 
-          {/* مصفي الصعوبة */}
-          <div className="flex-shrink-0">
-            <Tabs 
-              defaultValue={difficultyFilter || 'all'} 
-              onValueChange={(value) => setDifficultyFilter(value === 'all' ? null : value)}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all" className="flex items-center gap-1">
-                  <Filter className="h-4 w-4" /> الكل
-                </TabsTrigger>
-                <TabsTrigger value={DifficultyLevel.EASY}>سهل</TabsTrigger>
-                <TabsTrigger value={DifficultyLevel.MEDIUM}>متوسط</TabsTrigger>
-                <TabsTrigger value={DifficultyLevel.HARD}>صعب</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+
         </div>
 
         {/* عدد النتائج */}
@@ -163,7 +141,6 @@ export default function CategoryGrid({
             variant="link" 
             onClick={() => {
               setSearchTerm('');
-              setDifficultyFilter(null);
             }}
           >
             إعادة ضبط البحث

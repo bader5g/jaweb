@@ -26,31 +26,33 @@ export default function TeamHelpOptions({ teamId, gameId }: TeamHelpOptionsProps
   });
   
   // استخدام سياق اللعبة
-  const { game } = useGame();
+  const { game, createGameLog } = useGame();
   
   // التحقق من أن اللعبة موجودة وأن الفريق هو الفريق النشط
   const isActive = game?.currentTeamId === teamId;
+  
+  // الحصول على اسم الفريق
+  const teamName = teamId === game?.team1.id ? game?.team1.name : game?.team2.name;
   
   // استخدام وسيلة مساعدة
   const useHelp = async (helpType: string) => {
     if (usedHelps[helpType] || !gameId) return;
     
     try {
-      // سجل استخدام وسيلة المساعدة
-      await apiRequest('POST', `/api/games/${gameId}/logs`, {
-        action: 'use_help',
-        teamId,
-        details: {
-          helpType,
-          helpName: getHelpName(helpType)
-        }
-      });
+      // إنشاء سجل لاستخدام وسيلة المساعدة باستخدام createGameLog
+      await createGameLog('use_help', {
+        helpType,
+        helpName: getHelpName(helpType),
+        teamName
+      }, teamId);
       
       // تحديث الحالة المحلية
       setUsedHelps(prev => ({
         ...prev,
         [helpType]: true
       }));
+      
+      // لتنفيذ التأثير الفعلي للمساعدة (مثل إضافة وقت، تخطي سؤال، إلخ) يمكن إضافة مزيد من المنطق هنا
       
     } catch (error) {
       console.error('Error using help:', error);

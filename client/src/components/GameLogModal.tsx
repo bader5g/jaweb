@@ -10,7 +10,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CircleCheck, CircleX, Clock, Users, Phone, SkipForward, Trophy, PlusCircle, User, Category } from 'lucide-react';
+import { CircleCheck, CircleX, Clock, Users, Phone, SkipForward, Trophy, PlusCircle, User, FolderOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -81,7 +81,7 @@ export default function GameLogModal({ isOpen, onClose, gameId }: GameLogModalPr
       case 'end_game':
         return <Trophy className="h-4 w-4 text-yellow-600" />;
       case 'select_category':
-        return <Category className="h-4 w-4 text-purple-600" />;
+        return <FolderOpen className="h-4 w-4 text-purple-600" />;
       case 'select_difficulty':
         return <User className="h-4 w-4 text-indigo-600" />;
       case 'answer_question':

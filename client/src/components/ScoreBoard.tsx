@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, MinusCircle, Trophy, Clock, ArrowLeft, ArrowRight, Star, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TeamHelpOptions from "./TeamHelpOptions";
+import GameLogModal from "./GameLogModal";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function ScoreBoard() {
-  const { game, getCurrentTeam, updateTeamScore } = useGame();
+  const { game, getCurrentTeam, updateTeamScore, createGameLog } = useGame();
   const [animateTeam1, setAnimateTeam1] = useState(false);
   const [animateTeam2, setAnimateTeam2] = useState(false);
   const [showGameLog, setShowGameLog] = useState(false);
@@ -36,17 +37,20 @@ export default function ScoreBoard() {
     // تفعيل الحركة والتحديث كما كان من قبل
     handleScoreChange(teamId, amount);
     
-    // إضافة سجل للتغيير
+    // الحصول على اسم الفريق والنقاط الجديدة
+    const teamName = teamId === game.team1.id ? game.team1.name : game.team2.name;
+    const newScore = teamId === game.team1.id 
+      ? Math.max(0, game.team1.score + amount) 
+      : Math.max(0, game.team2.score + amount);
+    
+    // إضافة سجل للتغيير باستخدام createGameLog
     try {
-      await apiRequest('POST', `/api/games/${game.id}/logs`, {
-        action: 'update_score',
-        teamId,
-        details: {
-          changeAmount: amount,
-          teamName: teamId === game.team1.id ? game.team1.name : game.team2.name,
-          newScore: teamId === game.team1.id ? game.team1.score + amount : game.team2.score + amount
-        }
-      });
+      await createGameLog('update_score', {
+        changeAmount: amount,
+        teamName: teamName,
+        newScore: newScore,
+        manualUpdate: true
+      }, teamId);
     } catch (error) {
       console.error('Error logging score change:', error);
     }

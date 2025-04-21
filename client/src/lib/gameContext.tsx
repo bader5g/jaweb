@@ -206,9 +206,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       
       // إنشاء سجل لبدء اللعبة
       await createGameLog('start_game', {
-        gameName: game.name,
+        gameName: game.name || 'لعبة جديدة',
         team1: game.team1.name,
-        team2: game.team2.name
+        team2: game.team2.name,
+        categoryCount: game.categoryCount,
+        answerTime: game.answerTime
       });
       
       // تحويل المستخدم إلى صفحة اللعبة

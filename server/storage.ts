@@ -363,176 +363,105 @@ export class DatabaseStorage implements IStorage {
 
   // Category operations
   async getAllCategories(): Promise<Category[]> {
-    // بيانات ثابتة للتصنيفات (في المستقبل ستأتي من قاعدة البيانات)
-    const defaultCategories: Category[] = [
-      {
-        id: 1,
-        name: "History",
-        nameAr: "التاريخ",
-        icon: "BookOpen",
-        color: "amber-600",
-        description: "Test your knowledge about world history",
-        descriptionAr: "اختبر معلوماتك في التاريخ العالمي",
-        difficultyLevel: DifficultyLevel.MEDIUM,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 2,
-        name: "Science",
-        nameAr: "العلوم",
-        icon: "Atom",
-        color: "blue-500",
-        description: "Science facts and discoveries",
-        descriptionAr: "حقائق واكتشافات علمية",
-        difficultyLevel: DifficultyLevel.MEDIUM,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 3,
-        name: "Geography",
-        nameAr: "الجغرافيا",
-        icon: "Globe",
-        color: "green-500",
-        description: "Countries, capitals and landscapes",
-        descriptionAr: "الدول والعواصم والتضاريس",
-        difficultyLevel: DifficultyLevel.EASY,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 4,
-        name: "Literature",
-        nameAr: "الأدب",
-        icon: "BookText",
-        color: "purple-600",
-        description: "Books, authors and literary works",
-        descriptionAr: "الكتب والمؤلفين والأعمال الأدبية",
-        difficultyLevel: DifficultyLevel.HARD,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 5,
-        name: "Sports",
-        nameAr: "الرياضة",
-        icon: "Trophy",
-        color: "red-500",
-        description: "Sports teams, events and records",
-        descriptionAr: "الفرق الرياضية والأحداث والأرقام القياسية",
-        difficultyLevel: DifficultyLevel.EASY,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 6,
-        name: "Arts",
-        nameAr: "الفنون",
-        icon: "Palette",
-        color: "pink-500",
-        description: "Paintings, sculptures and artists",
-        descriptionAr: "اللوحات والمنحوتات والفنانين",
-        difficultyLevel: DifficultyLevel.MEDIUM,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 7,
-        name: "Technology",
-        nameAr: "التكنولوجيا",
-        icon: "Cpu",
-        color: "gray-700",
-        description: "Computers, software and innovations",
-        descriptionAr: "الحواسيب والبرمجيات والابتكارات",
-        difficultyLevel: DifficultyLevel.HARD,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 8,
-        name: "Movies",
-        nameAr: "الأفلام",
-        icon: "Film",
-        color: "yellow-600",
-        description: "Film directors, actors and titles",
-        descriptionAr: "المخرجين والممثلين وعناوين الأفلام",
-        difficultyLevel: DifficultyLevel.EASY,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 9,
-        name: "Music",
-        nameAr: "الموسيقى",
-        icon: "Music",
-        color: "indigo-500",
-        description: "Songs, artists and music history",
-        descriptionAr: "الأغاني والفنانين وتاريخ الموسيقى",
-        difficultyLevel: DifficultyLevel.MEDIUM,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 10,
-        name: "Food and Cuisine",
-        nameAr: "الطعام والمطبخ",
-        icon: "Utensils",
-        color: "green-600",
-        description: "Traditional dishes and culinary techniques",
-        descriptionAr: "الأطباق التقليدية وتقنيات الطهي",
-        difficultyLevel: DifficultyLevel.MEDIUM,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 11,
-        name: "Mathematics",
-        nameAr: "الرياضيات",
-        icon: "Calculator",
-        color: "blue-600",
-        description: "Numbers, shapes and mathematical concepts",
-        descriptionAr: "الأرقام والأشكال والمفاهيم الرياضية",
-        difficultyLevel: DifficultyLevel.HARD,
-        isActive: true,
-        gameId: null
-      },
-      {
-        id: 12,
-        name: "Religion",
-        nameAr: "الدين",
-        icon: "BookOpen",
-        color: "teal-600",
-        description: "Religious texts, figures and traditions",
-        descriptionAr: "النصوص والشخصيات والتقاليد الدينية",
-        difficultyLevel: DifficultyLevel.MEDIUM,
-        isActive: true,
-        gameId: null
-      }
-    ];
-    return defaultCategories;
+    try {
+      // استرجاع التصنيفات من قاعدة البيانات
+      const dbCategories = await db.select().from(categories).where(eq(categories.isActive, true));
+      return dbCategories;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
   }
 
   async getCategoriesByGame(gameId: string): Promise<Category[]> {
-    // ستقوم هذه الوظيفة بإرجاع التصنيفات المرتبطة بلعبة معينة مع أسئلتها
-    const allCategories = await this.getAllCategories();
-    const gameCategories = allCategories.slice(0, 8); // نرجع أول 8 تصنيفات
-    
-    // إنشاء أسئلة عشوائية لكل تصنيف
-    const categoriesWithQuestions: Category[] = [];
-    
-    for (const category of gameCategories) {
-      // إنشاء نسخة من التصنيف مع إضافة حقل الأسئلة
-      const categoryWithQuestions: Category = {
-        id: category.id,
-        name: category.name,
-        questions: this.generateQuestionsForCategory(category.id, gameId)
-      };
+    try {
+      // أولاً نجلب كل التصنيفات النشطة
+      const allCategories = await this.getAllCategories();
       
-      categoriesWithQuestions.push(categoryWithQuestions);
+      // ثم نجلب التصنيفات المرتبطة باللعبة إذا وجدت أو نستخدم أول 8 تصنيفات
+      let gameCategories: any[];
+      
+      // نبحث عن التصنيفات التي تم ربطها باللعبة بالفعل
+      const linkedCategories = await db
+        .select()
+        .from(categories)
+        .where(eq(categories.gameId, gameId));
+      
+      if (linkedCategories.length > 0) {
+        gameCategories = linkedCategories;
+      } else {
+        // إذا لم تكن هناك تصنيفات مرتبطة، نأخذ أول 8 تصنيفات
+        gameCategories = allCategories.slice(0, 8);
+      }
+      
+      // نبحث عن أسئلة موجودة بالفعل لهذه اللعبة
+      const existingQuestions = await db
+        .select()
+        .from(questions)
+        .where(eq(questions.gameId, gameId));
+      
+      // تنظيم الأسئلة حسب التصنيف
+      const questionsByCategory = new Map<number, Question[]>();
+      
+      for (const question of existingQuestions) {
+        if (question.categoryId) {
+          if (!questionsByCategory.has(question.categoryId)) {
+            questionsByCategory.set(question.categoryId, []);
+          }
+          questionsByCategory.get(question.categoryId)?.push(question);
+        }
+      }
+      
+      // بناء التصنيفات مع أسئلتها
+      const categoriesWithQuestions: any[] = [];
+      
+      for (const category of gameCategories) {
+        // نستخدم الأسئلة الموجودة أو ننشئ أسئلة جديدة
+        let categoryQuestions: Question[];
+        
+        if (questionsByCategory.has(category.id) && questionsByCategory.get(category.id)!.length === 6) {
+          // إذا كانت هناك بالفعل 6 أسئلة لهذا التصنيف، نستخدمها
+          categoryQuestions = questionsByCategory.get(category.id)!;
+        } else {
+          // وإلا ننشئ أسئلة جديدة
+          categoryQuestions = this.generateQuestionsForCategory(category.id, gameId);
+          
+          // ونضيفها إلى قاعدة البيانات
+          for (const question of categoryQuestions) {
+            const insertQuestion = {
+              text: question.text,
+              answer: question.answer,
+              difficulty: question.difficulty,
+              points: question.points,
+              categoryId: category.id,
+              gameId: gameId,
+              teamId: question.teamId,
+              isAnswered: question.isAnswered
+            };
+            
+            try {
+              await db.insert(questions).values(insertQuestion);
+            } catch (error) {
+              console.error('Error inserting question:', error);
+            }
+          }
+        }
+        
+        // إنشاء كائن التصنيف مع أسئلته
+        const categoryWithQuestions = {
+          id: category.id,
+          name: category.name,
+          questions: categoryQuestions
+        };
+        
+        categoriesWithQuestions.push(categoryWithQuestions);
+      }
+      
+      return categoriesWithQuestions;
+    } catch (error) {
+      console.error('Error getting categories by game:', error);
+      throw error;
     }
-    
-    return categoriesWithQuestions;
   }
   
   // وظيفة مساعدة لإنشاء أسئلة عشوائية لتصنيف معين
@@ -548,30 +477,50 @@ export class DatabaseStorage implements IStorage {
     // سنستخدم اسم التصنيف ورقم معرفه لإنشاء أسئلة مختلفة قليلاً
     const categoryTypes = ["عام", "تاريخي", "ثقافي", "رياضي", "فني", "علمي"];
     
+    // إنشاء نموذج للسؤال ثم إضافة خصائص إضافية
+    const createQuestionTemplate = (
+      index: number, 
+      teamId: number, 
+      difficulty: string, 
+      typeIndex: number
+    ): Question => {
+      const questionNumber = teamId === 1 ? index + 1 : index + 4;
+      
+      return {
+        id: categoryId * 100 + questionNumber,
+        text: `سؤال ${categoryTypes[typeIndex % categoryTypes.length]} في التصنيف رقم ${categoryId} (مستوى ${difficulty})`,
+        answer: `إجابة السؤال ${questionNumber} للتصنيف ${categoryId}`,
+        difficulty: difficulty,
+        points: points[difficulty as keyof typeof points],
+        teamId,
+        categoryId,
+        gameId,
+        isAnswered: false
+      };
+    };
+    
     // إنشاء 3 أسئلة للفريق الأول
     for (let i = 0; i < 3; i++) {
-      questions.push({
-        id: categoryId * 100 + i + 1, // معرف فريد للسؤال
-        text: `سؤال ${categoryTypes[i % categoryTypes.length]} في التصنيف رقم ${categoryId} (مستوى ${difficulties[i]})`,
-        answer: `إجابة السؤال ${i + 1} للتصنيف ${categoryId}`,
-        difficulty: difficulties[i],
-        points: points[difficulties[i]],
-        teamId: 1, // الفريق الأول
-        isAnswered: false
-      });
+      questions.push(
+        createQuestionTemplate(
+          i,
+          1, // الفريق الأول
+          difficulties[i],
+          i % categoryTypes.length
+        )
+      );
     }
     
     // إنشاء 3 أسئلة للفريق الثاني
     for (let i = 0; i < 3; i++) {
-      questions.push({
-        id: categoryId * 100 + i + 4, // معرف فريد للسؤال
-        text: `سؤال ${categoryTypes[(i + 3) % categoryTypes.length]} في التصنيف رقم ${categoryId} (مستوى ${difficulties[i]})`,
-        answer: `إجابة السؤال ${i + 4} للتصنيف ${categoryId}`,
-        difficulty: difficulties[i],
-        points: points[difficulties[i]],
-        teamId: 2, // الفريق الثاني
-        isAnswered: false
-      });
+      questions.push(
+        createQuestionTemplate(
+          i,
+          2, // الفريق الثاني
+          difficulties[i],
+          (i + 3) % categoryTypes.length
+        )
+      );
     }
     
     return questions;

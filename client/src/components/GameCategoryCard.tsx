@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from "@/lib/gameContext";
-import { Category, Question } from "@/lib/types";
-import { motion } from 'framer-motion';
+import { Category, Question, DifficultyLevel } from "@/lib/types";
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, Atom, Globe, BookText, Trophy, Palette, 
-  Cpu, Film, Music, Utensils, Calculator, FolderOpen, CheckCircle
+  Cpu, Film, Music, Utensils, Calculator, CheckCircle,
+  ChevronDown, ChevronUp, Check, X, HelpCircle
 } from 'lucide-react';
 
 interface GameCategoryCardProps {
@@ -12,7 +13,8 @@ interface GameCategoryCardProps {
 }
 
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
-  const { game, selectCategory } = useGame();
+  const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
@@ -66,6 +68,67 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     return 'violet';
   };
   
+  const color = getCategoryColor();
+  const iconName = getCategoryIcon();
+  
+  // تجميع الأسئلة حسب الصعوبة والفريق
+  const getQuestionsByDifficulty = () => {
+    const result = {
+      easy: {
+        team1: [] as Question[],
+        team2: [] as Question[]
+      },
+      medium: {
+        team1: [] as Question[],
+        team2: [] as Question[]
+      },
+      hard: {
+        team1: [] as Question[],
+        team2: [] as Question[]
+      }
+    };
+    
+    category.questions.forEach(q => {
+      const team = q.teamId === game?.team1.id ? 'team1' : 'team2';
+      if (q.difficulty === DifficultyLevel.EASY) {
+        result.easy[team].push(q);
+      } else if (q.difficulty === DifficultyLevel.MEDIUM) {
+        result.medium[team].push(q);
+      } else if (q.difficulty === DifficultyLevel.HARD) {
+        result.hard[team].push(q);
+      }
+    });
+    
+    return result;
+  };
+  
+  const questionsByDifficulty = getQuestionsByDifficulty();
+  
+  // تحقق من المستويات المتبقية للفريق الحالي
+  const getRemainingLevelsForCurrentTeam = () => {
+    if (!game) return [];
+    
+    const currentTeamId = game.currentTeamId;
+    const teamKey = currentTeamId === game.team1.id ? 'team1' : 'team2';
+    
+    const levels = [];
+    
+    // نتحقق من وجود أسئلة غير مجابة في كل مستوى للفريق الحالي
+    if (questionsByDifficulty.easy[teamKey].some(q => !q.isAnswered)) {
+      levels.push(DifficultyLevel.EASY);
+    }
+    
+    if (questionsByDifficulty.medium[teamKey].some(q => !q.isAnswered)) {
+      levels.push(DifficultyLevel.MEDIUM);
+    }
+    
+    if (questionsByDifficulty.hard[teamKey].some(q => !q.isAnswered)) {
+      levels.push(DifficultyLevel.HARD);
+    }
+    
+    return levels;
+  };
+  
   // حساب عدد الأسئلة المتبقية
   const remainingQuestions = () => {
     const team1Questions = category.questions.filter(q => q.teamId === game?.team1.id && !q.isAnswered);
@@ -83,44 +146,148 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   // تحديد إذا كانت الفئة مكتملة
   const isCompleted = remaining.total === 0;
   
-  // معالجة النقر على البطاقة
-  const handleClick = () => {
-    if (!isCompleted && selectCategory) {
-      selectCategory(category.name);
-    }
-  };
-
   // الحصول على نسبة الأسئلة المجابة
   const completionPercentage = Math.round(
     ((6 - remaining.total) / 6) * 100
   );
   
-  const color = getCategoryColor();
-  const iconName = getCategoryIcon();
+  // معالجة النقر على البطاقة
+  const handleCardClick = () => {
+    if (isCompleted) return;
+    setIsExpanded(!isExpanded);
+  };
+  
+  // معالجة اختيار المستوى
+  const handleSelectDifficulty = (difficulty: string) => {
+    if (!isCompleted) {
+      selectCategory(category.name);
+      setTimeout(() => {
+        selectDifficulty(difficulty);
+      }, 200);
+    }
+  };
+  
+  // تحويل المستوى إلى عنوان بالعربية
+  const getDifficultyLabel = (difficulty: string): string => {
+    switch (difficulty) {
+      case DifficultyLevel.EASY:
+        return 'سهل';
+      case DifficultyLevel.MEDIUM:
+        return 'متوسط';
+      case DifficultyLevel.HARD:
+        return 'صعب';
+      default:
+        return 'سهل';
+    }
+  };
+  
+  // تحديد لون المستوى
+  const getDifficultyColor = (difficulty: string): string => {
+    switch (difficulty) {
+      case DifficultyLevel.EASY:
+        return 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700';
+      case DifficultyLevel.MEDIUM:
+        return 'bg-gradient-to-r from-yellow-400 to-amber-600 hover:from-yellow-500 hover:to-amber-700';
+      case DifficultyLevel.HARD:
+        return 'bg-gradient-to-r from-red-400 to-red-600 hover:from-red-500 hover:to-red-700';
+      default:
+        return 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700';
+    }
+  };
+  
+  // التحقق مما إذا كان السؤال متاحاً للفريق الحالي
+  const isQuestionAvailableForCurrentTeam = (difficulty: string): boolean => {
+    if (!game) return false;
+    
+    const currentTeamId = game.currentTeamId;
+    const teamKey = currentTeamId === game.team1.id ? 'team1' : 'team2';
+    
+    let questions;
+    if (difficulty === DifficultyLevel.EASY) {
+      questions = questionsByDifficulty.easy[teamKey];
+    } else if (difficulty === DifficultyLevel.MEDIUM) {
+      questions = questionsByDifficulty.medium[teamKey];
+    } else if (difficulty === DifficultyLevel.HARD) {
+      questions = questionsByDifficulty.hard[teamKey];
+    } else {
+      return false;
+    }
+    
+    return questions.some(q => !q.isAnswered);
+  };
+  
+  // الحصول على أيقونة حالة السؤال
+  const getQuestionStatusIcon = (difficulty: string, teamId: number) => {
+    const teamKey = teamId === game?.team1.id ? 'team1' : 'team2';
+    let questions;
+    
+    if (difficulty === DifficultyLevel.EASY) {
+      questions = questionsByDifficulty.easy[teamKey];
+    } else if (difficulty === DifficultyLevel.MEDIUM) {
+      questions = questionsByDifficulty.medium[teamKey];
+    } else if (difficulty === DifficultyLevel.HARD) {
+      questions = questionsByDifficulty.hard[teamKey];
+    } else {
+      return <HelpCircle className="h-4 w-4 text-gray-400" />;
+    }
+    
+    if (!questions || questions.length === 0) {
+      return <HelpCircle className="h-4 w-4 text-gray-400" />;
+    }
+    
+    const question = questions[0];
+    if (!question.isAnswered) {
+      return <HelpCircle className="h-4 w-4 text-blue-500" />;
+    }
+    
+    return <Check className="h-4 w-4 text-green-500" />;
+  };
+  
+  const currentTeamId = game?.currentTeamId;
+  const currentTeamName = currentTeamId === game?.team1.id ? game?.team1.name : game?.team2.name;
   
   return (
     <motion.div
       className={`category-card ${isCompleted ? 'opacity-75' : ''}`}
-      whileHover={{ y: -5, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
-      whileTap={{ scale: 0.98 }}
-      onClick={handleClick}
+      whileHover={{ y: isExpanded ? 0 : -5, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
+      whileTap={{ scale: isExpanded ? 1 : 0.98 }}
+      onClick={handleCardClick}
+      layout
     >
-      <div className={`p-6 h-full rounded-2xl relative overflow-hidden ${isCompleted ? 'bg-gray-100' : 'bg-white'}`}>
+      <div className={`p-6 rounded-2xl relative overflow-hidden ${isCompleted ? 'bg-gray-100' : 'bg-white'}`}>
         {/* خلفية مموجة للبطاقة */}
         <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-${color}-100 opacity-50`}></div>
         <div className={`absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-${color}-50 opacity-50`}></div>
         
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
             <h3 className={`text-2xl font-bold text-gray-800 ${isCompleted ? '' : `text-${color}-700`}`}>
               {category.name}
             </h3>
             
-            <div className={`p-3 rounded-xl ${isCompleted ? 'bg-gray-200' : `bg-${color}-100`}`}>
-              {isCompleted ? 
-                <CheckCircle className="h-7 w-7 text-gray-500" /> : 
-                getIcon(iconName)
-              }
+            <div className="flex items-center gap-2">
+              <div className={`p-3 rounded-xl ${isCompleted ? 'bg-gray-200' : `bg-${color}-100`}`}>
+                {isCompleted ? 
+                  <CheckCircle className="h-7 w-7 text-gray-500" /> : 
+                  getIcon(iconName)
+                }
+              </div>
+              
+              {!isCompleted && (
+                <button 
+                  className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }}
+                >
+                  {isExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-600" />
+                  )}
+                </button>
+              )}
             </div>
           </div>
           
@@ -134,23 +301,109 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             </div>
           </div>
           
-          <div className="mt-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="h-4 w-4 rounded-full bg-blue-600 mr-2"></div>
-                <span className="text-sm text-gray-600">
-                  {game?.team1.name}: <span className="font-bold">{remaining.team1}</span>
-                </span>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="h-4 w-4 rounded-full bg-red-600 mr-2"></div>
-                <span className="text-sm text-gray-600">
-                  {game?.team2.name}: <span className="font-bold">{remaining.team2}</span>
-                </span>
-              </div>
+          <div className="flex justify-between items-center text-sm text-gray-700">
+            <div className="flex items-center">
+              <div className="h-3 w-3 rounded-full bg-blue-600 mr-2"></div>
+              <span>{game?.team1.name}: <span className="font-bold">{remaining.team1}</span></span>
+            </div>
+            
+            <div className="flex items-center">
+              <div className="h-3 w-3 rounded-full bg-red-600 mr-2"></div>
+              <span>{game?.team2.name}: <span className="font-bold">{remaining.team2}</span></span>
             </div>
           </div>
+          
+          {/* عرض أسئلة الفئة */}
+          <AnimatePresence>
+            {isExpanded && !isCompleted && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-6 pt-4 border-t border-gray-200"
+              >
+                <div className="mb-3">
+                  <p className="text-center text-sm text-gray-600 mb-1">
+                    دور الفريق: <span className="font-bold">{currentTeamName}</span>
+                  </p>
+                  
+                  <p className="text-center text-xs text-gray-500">اختر مستوى صعوبة للسؤال</p>
+                </div>
+                
+                <div className="space-y-3">
+                  {/* مستوى سهل */}
+                  <button
+                    onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
+                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
+                    className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
+                      isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
+                        ? getDifficultyColor(DifficultyLevel.EASY)
+                        : 'bg-gray-300 cursor-not-allowed'
+                    } transition-colors flex justify-between items-center`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {getQuestionStatusIcon(DifficultyLevel.EASY, game?.team1.id || 0)}
+                      <span className="text-xs">{game?.team1.name}</span>
+                    </div>
+                    
+                    <span>{getDifficultyLabel(DifficultyLevel.EASY)} - {DifficultyLevel.EASY === DifficultyLevel.EASY ? '1' : DifficultyLevel.EASY === DifficultyLevel.MEDIUM ? '2' : '3'} نقاط</span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs">{game?.team2.name}</span>
+                      {getQuestionStatusIcon(DifficultyLevel.EASY, game?.team2.id || 0)}
+                    </div>
+                  </button>
+                  
+                  {/* مستوى متوسط */}
+                  <button
+                    onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
+                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
+                    className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
+                      isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
+                        ? getDifficultyColor(DifficultyLevel.MEDIUM)
+                        : 'bg-gray-300 cursor-not-allowed'
+                    } transition-colors flex justify-between items-center`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, game?.team1.id || 0)}
+                      <span className="text-xs">{game?.team1.name}</span>
+                    </div>
+                    
+                    <span>{getDifficultyLabel(DifficultyLevel.MEDIUM)} - {DifficultyLevel.MEDIUM === DifficultyLevel.EASY ? '1' : DifficultyLevel.MEDIUM === DifficultyLevel.MEDIUM ? '2' : '3'} نقاط</span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs">{game?.team2.name}</span>
+                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, game?.team2.id || 0)}
+                    </div>
+                  </button>
+                  
+                  {/* مستوى صعب */}
+                  <button
+                    onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
+                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
+                    className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
+                      isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
+                        ? getDifficultyColor(DifficultyLevel.HARD)
+                        : 'bg-gray-300 cursor-not-allowed'
+                    } transition-colors flex justify-between items-center`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {getQuestionStatusIcon(DifficultyLevel.HARD, game?.team1.id || 0)}
+                      <span className="text-xs">{game?.team1.name}</span>
+                    </div>
+                    
+                    <span>{getDifficultyLabel(DifficultyLevel.HARD)} - {DifficultyLevel.HARD === DifficultyLevel.EASY ? '1' : DifficultyLevel.HARD === DifficultyLevel.MEDIUM ? '2' : '3'} نقاط</span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs">{game?.team2.name}</span>
+                      {getQuestionStatusIcon(DifficultyLevel.HARD, game?.team2.id || 0)}
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {isCompleted && (
             <div className="absolute top-4 left-4 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs font-medium">

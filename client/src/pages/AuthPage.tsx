@@ -323,7 +323,7 @@ export default function AuthPage() {
                     </div>
                     <h3 className="text-xl font-bold">تحدي المعرفة</h3>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-800 dark:text-gray-200">
                     استكشف مجموعة متنوعة من الفئات من التاريخ إلى العلوم والرياضة والفن والكثير غيرها
                   </p>
                 </div>

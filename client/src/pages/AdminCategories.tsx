@@ -261,7 +261,7 @@ export default function AdminCategories() {
         <CardDescription>{category.name}</CardDescription>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <div className="text-sm text-gray-500 line-clamp-2 min-h-[40px]">
+        <div className="text-sm text-gray-700 line-clamp-2 min-h-[40px]">
           {category.descriptionAr || 'لا يوجد وصف'}
         </div>
       </CardContent>
@@ -366,7 +366,7 @@ export default function AdminCategories() {
                       </div>
                       <div>
                         <h3 className="font-bold text-lg">{parentCategory.nameAr}</h3>
-                        <p className="text-sm text-gray-500">{parentCategory.name}</p>
+                        <p className="text-sm text-gray-700">{parentCategory.name}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -471,7 +471,7 @@ export default function AdminCategories() {
 
       {!filteredCategories?.length && (
         <div className="text-center py-12">
-          <div className="text-gray-500 mb-4">لا توجد تصنيفات مطابقة</div>
+          <div className="text-gray-800 font-medium mb-4">لا توجد تصنيفات مطابقة</div>
           {filter && (
             <Button variant="outline" onClick={() => setFilter('')}>
               مسح البحث

@@ -50,13 +50,14 @@ export default function Home() {
         selectedCategories
       });
       
-      // إنشاء اللعبة مباشرة بدلاً من الانتقال إلى صفحة الإعداد
+      // إنشاء اللعبة مباشرة بدلاً من الانتقال إلى صفحة الإعداد مع إرسال الفئات المختارة
       await createGame(
         selectedCategories.length, 
         team1Name, 
         team2Name, 
         parseInt(answerTime),
-        gameName
+        gameName,
+        selectedCategories
       );
       
       // لا داعي للانتقال لأن وظيفة createGame ستقوم بذلك تلقائياً

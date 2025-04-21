@@ -128,7 +128,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     };
   }, [toast, navigate]);
 
-  const createGame = async (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string): Promise<Game | null> => {
+  const createGame = async (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string, selectedCategories?: number[]): Promise<Game | null> => {
     setLoading(true);
     setError(null);
     
@@ -138,7 +138,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         team1Name,
         team2Name,
         answerTime,
-        name: gameName
+        name: gameName,
+        selectedCategories
       });
       
       const newGame = await res.json();

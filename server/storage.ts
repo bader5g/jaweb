@@ -109,7 +109,7 @@ export class DatabaseStorage implements IStorage {
 
   // TODO: Implement game operations
   // Game operations - stub implementations
-  async createGame(categoryCount: number, team1Name: string, team2Name: string, answerTime: number = 30, gameName?: string): Promise<Game> {
+  async createGame(categoryCount: number, team1Name: string, team2Name: string, answerTime: number = 30, gameName?: string, selectedCategoryIds?: number[]): Promise<Game> {
     try {
       const gameId = randomUUID();
       

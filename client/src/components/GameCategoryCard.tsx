@@ -315,8 +315,15 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               <p className="text-center text-sm text-gray-600 mb-1">
                 دور الفريق: <span className="font-bold">{currentTeamName}</span>
               </p>
-
-              <p className="text-center text-xs text-gray-500">اختر رقم السؤال</p>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                {getIcon(iconName)}
+                <h3 className="text-lg font-bold text-gray-800">{category.nameAr || category.name}</h3>
+              </div>
+              <div className="flex justify-center gap-2 text-xs text-gray-500">
+                <span>🔍 تلميح</span>
+                <span>📞 اتصال بصديق</span>
+                <span>👥 استشارة الجمهور</span>
+              </div>
             </div>
 
             <div className="space-y-3">

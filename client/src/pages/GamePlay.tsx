@@ -60,12 +60,9 @@ export default function GamePlay() {
         </div>
 
         <header className="text-center mb-8 bg-glass py-6 rounded-xl shadow-lg border border-white/30 animate-glow">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
             {game.name || "لعبة الأسئلة والأجوبة"}
           </h1>
-          <p className="text-xl text-gray-700 dark:text-gray-300">
-            تنافس مع فريقك واختبر معلوماتك
-          </p>
         </header>
 
         <div className="bg-glass rounded-2xl p-6 shadow-lg border border-white/30 relative overflow-hidden mb-8">

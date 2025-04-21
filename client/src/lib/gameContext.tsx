@@ -1,0 +1,322 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { apiRequest } from "./queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Game, GameState, Question } from "./types";
+import { useLocation } from "wouter";
+
+interface GameContextType {
+  game: Game | null;
+  loading: boolean;
+  error: string | null;
+  createGame: (categoryCount: number, team1Name: string, team2Name: string) => Promise<Game | null>;
+  joinGame: (gameId: string) => void;
+  startGame: () => Promise<void>;
+  selectCategory: (categoryName: string) => Promise<void>;
+  selectDifficulty: (difficulty: string) => Promise<void>;
+  answerQuestion: (questionId: number, isCorrect: boolean) => Promise<void>;
+  endGame: () => Promise<void>;
+  startNewGame: () => void;
+  getCurrentQuestion: () => Question | null;
+  getCurrentTeam: () => { id: number; name: string; score: number } | null;
+  isGameCompleted: () => boolean;
+}
+
+const GameContext = createContext<GameContextType | undefined>(undefined);
+
+export function GameProvider({ children }: { children: ReactNode }) {
+  const [game, setGame] = useState<Game | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  // Setup WebSocket connection when game changes
+  useEffect(() => {
+    if (game?.id && !socket) {
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        console.log('Connecting to WebSocket at:', wsUrl);
+        
+        const ws = new WebSocket(wsUrl);
+        
+        ws.addEventListener('open', () => {
+          console.log('WebSocket connection established');
+          ws.send(JSON.stringify({ type: 'join', gameId: game.id }));
+        });
+        
+        ws.addEventListener('message', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'game_state') {
+              setGame(data.game);
+            }
+          } catch (err) {
+            console.error('Error parsing WebSocket message:', err);
+          }
+        });
+        
+        ws.addEventListener('error', (err) => {
+          console.error('WebSocket error:', err);
+          toast({
+            title: "خطأ في الاتصال",
+            description: "حدث خطأ في الاتصال بالخادم",
+            variant: "destructive"
+          });
+        });
+        
+        ws.addEventListener('close', (event) => {
+          console.log('WebSocket connection closed:', event.code, event.reason);
+        });
+        
+        setSocket(ws);
+        
+        return () => {
+          console.log('Closing WebSocket connection');
+          ws.close();
+          setSocket(null);
+        };
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+        toast({
+          title: "خطأ في الاتصال",
+          description: "تعذر الاتصال بالخادم",
+          variant: "destructive"
+        });
+      }
+    }
+  }, [game?.id, toast]);
+
+  const createGame = async (categoryCount: number, team1Name: string, team2Name: string): Promise<Game | null> => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const res = await apiRequest('POST', '/api/games', {
+        categoryCount,
+        team1Name,
+        team2Name
+      });
+      
+      const newGame = await res.json();
+      setGame(newGame);
+      return newGame;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء إنشاء اللعبة';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const joinGame = (gameId: string) => {
+    setLoading(true);
+    
+    apiRequest('GET', `/api/games/${gameId}`)
+      .then(res => res.json())
+      .then(gameData => {
+        setGame(gameData);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message || 'Failed to join game');
+        setLoading(false);
+        toast({
+          title: "خطأ",
+          description: "فشل في الانضمام إلى اللعبة",
+          variant: "destructive"
+        });
+      });
+  };
+
+  const startGame = async () => {
+    if (!game) return;
+    
+    setLoading(true);
+    
+    try {
+      await apiRequest('POST', `/api/games/${game.id}/start`);
+      navigate('/play');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء بدء اللعبة';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectCategory = async (categoryName: string) => {
+    if (!game) return;
+    
+    try {
+      await apiRequest('PUT', `/api/games/${game.id}/current-category`, { category: categoryName });
+      await apiRequest('PUT', `/api/games/${game.id}/state`, { state: GameState.DIFFICULTY_SELECTION });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار الفئة';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const selectDifficulty = async (difficulty: string) => {
+    if (!game) return;
+    
+    try {
+      await apiRequest('PUT', `/api/games/${game.id}/current-difficulty`, { difficulty });
+      await apiRequest('PUT', `/api/games/${game.id}/state`, { state: GameState.QUESTION });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار المستوى';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const answerQuestion = async (questionId: number, isCorrect: boolean) => {
+    if (!game) return;
+    
+    try {
+      const currentQuestion = getCurrentQuestion();
+      if (!currentQuestion) return;
+      
+      // Mark question as answered
+      await apiRequest('PUT', `/api/questions/${questionId}/answered`, { gameId: game.id });
+      
+      // Update score if correct
+      if (isCorrect) {
+        const points = currentQuestion.points;
+        await apiRequest('PUT', `/api/teams/${game.currentTeamId}/score`, { 
+          points, 
+          gameId: game.id 
+        });
+      }
+      
+      // Switch teams
+      const nextTeamId = game.currentTeamId === game.team1.id ? game.team2.id : game.team1.id;
+      await apiRequest('PUT', `/api/games/${game.id}/current-team`, { teamId: nextTeamId });
+      
+      // Go back to category selection
+      await apiRequest('PUT', `/api/games/${game.id}/state`, { state: GameState.CATEGORY_SELECTION });
+      
+      // Check if game is complete
+      setTimeout(() => {
+        if (game && isGameCompleted()) {
+          endGame();
+        }
+      }, 300);
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء الإجابة';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const endGame = async () => {
+    if (!game) return;
+    
+    try {
+      await apiRequest('POST', `/api/games/${game.id}/end`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء إنهاء اللعبة';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const startNewGame = () => {
+    setGame(null);
+    navigate('/');
+  };
+
+  const getCurrentQuestion = (): Question | null => {
+    if (!game || !game.currentCategory || !game.currentDifficulty) return null;
+    
+    const category = game.categories.find(c => c.name === game.currentCategory);
+    if (!category) return null;
+    
+    return category.questions.find(
+      q => q.difficulty === game.currentDifficulty && 
+           q.teamId === game.currentTeamId && 
+           !q.isAnswered
+    ) || null;
+  };
+
+  const getCurrentTeam = () => {
+    if (!game) return null;
+    return game.currentTeamId === game.team1.id ? game.team1 : game.team2;
+  };
+
+  const isGameCompleted = (): boolean => {
+    if (!game) return false;
+    
+    // Check if all questions are answered
+    for (const category of game.categories) {
+      for (const question of category.questions) {
+        if (!question.isAnswered) {
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  };
+
+  return (
+    <GameContext.Provider
+      value={{
+        game,
+        loading,
+        error,
+        createGame,
+        joinGame,
+        startGame,
+        selectCategory,
+        selectDifficulty,
+        answerQuestion,
+        endGame,
+        startNewGame,
+        getCurrentQuestion,
+        getCurrentTeam,
+        isGameCompleted
+      }}
+    >
+      {children}
+    </GameContext.Provider>
+  );
+}
+
+export function useGame() {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error("useGame must be used within a GameProvider");
+  }
+  return context;
+}

@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  html {
+    @apply text-right; /* for RTL Arabic text */
+  }
+}
+
+@layer components {
+  .bg-primary-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary;
+  }
+
+  .difficulty-easy {
+    @apply bg-green-500 text-white;
+  }
+
+  .difficulty-medium {
+    @apply bg-yellow-500 text-white;
+  }
+
+  .difficulty-hard {
+    @apply bg-red-500 text-white;
+  }
+
+  .team-one {
+    @apply bg-blue-600 text-white;
+  }
+
+  .team-two {
+    @apply bg-red-600 text-white;
+  }
+
+  .card-flip {
+    @apply [transform:rotateY(180deg)];
+  }
+
+  .question-card {
+    @apply [perspective:1000px] [transform-style:preserve-3d] [transition:transform_0.6s];
+  }
+
+  .card-front, .card-back {
+    @apply absolute w-full h-full [backface-visibility:hidden];
+  }
+
+  .card-back {
+    @apply [transform:rotateY(180deg)];
+  }
+}

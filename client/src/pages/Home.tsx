@@ -11,13 +11,14 @@ import SelectedCategoriesFloater from "../components/SelectedCategoriesFloater";
 import { Shield, BrainCircuit, Timer } from "lucide-react";
 
 export default function Home() {
-  const { startNewGame } = useGame();
+  const { startNewGame, createGame, loading } = useGame();
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [gameName, setGameName] = useState("");
   const [team1Name, setTeam1Name] = useState("الفريق الأزرق");
   const [team2Name, setTeam2Name] = useState("الفريق الأحمر");
-  const [answerTime, setAnswerTime] = useState("30");
+  const [answerTime, setAnswerTime] = useState("60");
+  const [isCreatingGame, setIsCreatingGame] = useState(false);
   
   useEffect(() => {
     // إعادة تعيين حالة اللعبة في الصفحة الرئيسية
@@ -34,18 +35,36 @@ export default function Home() {
     }
   };
   
-  const handleStartGame = () => {
-    // سنقوم بتنفيذ منطق بدء اللعبة الجديدة
-    console.log({
-      gameName,
-      team1Name,
-      team2Name,
-      answerTime,
-      selectedCategories
-    });
+  const handleStartGame = async () => {
+    if (isCreatingGame) return;
     
-    // الانتقال إلى صفحة إعداد اللعبة
-    window.location.href = "/setup";
+    setIsCreatingGame(true);
+    
+    try {
+      // سنقوم بتنفيذ منطق بدء اللعبة الجديدة مباشرة
+      console.log({
+        gameName,
+        team1Name,
+        team2Name,
+        answerTime: parseInt(answerTime),
+        selectedCategories
+      });
+      
+      // إنشاء اللعبة مباشرة بدلاً من الانتقال إلى صفحة الإعداد
+      await createGame(
+        selectedCategories.length, 
+        team1Name, 
+        team2Name, 
+        parseInt(answerTime),
+        gameName
+      );
+      
+      // لا داعي للانتقال لأن وظيفة createGame ستقوم بذلك تلقائياً
+    } catch (error) {
+      console.error("حدث خطأ أثناء إنشاء اللعبة:", error);
+    } finally {
+      setIsCreatingGame(false);
+    }
   };
   
   const isStartGameDisabled = selectedCategories.length < 4;

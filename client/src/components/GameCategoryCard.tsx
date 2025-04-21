@@ -347,7 +347,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                       <span className="text-xs">{game?.team1.name}</span>
                     </div>
                     
-                    <span>{getDifficultyLabel(DifficultyLevel.EASY)} - {DifficultyLevel.EASY === DifficultyLevel.EASY ? '1' : DifficultyLevel.EASY === DifficultyLevel.MEDIUM ? '2' : '3'} نقاط</span>
+                    <span>{getDifficultyLabel(DifficultyLevel.EASY)} - 1 نقطة</span>
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{game?.team2.name}</span>
@@ -370,7 +370,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                       <span className="text-xs">{game?.team1.name}</span>
                     </div>
                     
-                    <span>{getDifficultyLabel(DifficultyLevel.MEDIUM)} - {DifficultyLevel.MEDIUM === DifficultyLevel.EASY ? '1' : DifficultyLevel.MEDIUM === DifficultyLevel.MEDIUM ? '2' : '3'} نقاط</span>
+                    <span>{getDifficultyLabel(DifficultyLevel.MEDIUM)} - 2 نقطة</span>
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{game?.team2.name}</span>
@@ -393,7 +393,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                       <span className="text-xs">{game?.team1.name}</span>
                     </div>
                     
-                    <span>{getDifficultyLabel(DifficultyLevel.HARD)} - {DifficultyLevel.HARD === DifficultyLevel.EASY ? '1' : DifficultyLevel.HARD === DifficultyLevel.MEDIUM ? '2' : '3'} نقاط</span>
+                    <span>{getDifficultyLabel(DifficultyLevel.HARD)} - 3 نقاط</span>
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{game?.team2.name}</span>

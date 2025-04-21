@@ -121,11 +121,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schema = z.object({
         categoryCount: z.number().min(4).max(8),
         team1Name: z.string().min(1),
-        team2Name: z.string().min(1)
+        team2Name: z.string().min(1),
+        answerTime: z.number().default(30),
+        name: z.string().optional(),
+        selectedCategories: z.array(z.number()).optional()
       });
       
-      const { categoryCount, team1Name, team2Name } = schema.parse(req.body);
-      const game = await storage.createGame(categoryCount, team1Name, team2Name);
+      const { categoryCount, team1Name, team2Name, answerTime, name, selectedCategories } = schema.parse(req.body);
+      const game = await storage.createGame(
+        categoryCount, 
+        team1Name, 
+        team2Name, 
+        answerTime, 
+        name, 
+        selectedCategories
+      );
       
       res.status(201).json(game);
     } catch (error) {

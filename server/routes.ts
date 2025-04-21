@@ -4,8 +4,12 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { GameState } from "@shared/schema";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication routes
+  setupAuth(app);
+  
   const httpServer = createServer(app);
   
   // Setup WebSocket server with specific path to avoid conflicts with Vite HMR

@@ -26,6 +26,17 @@ export interface IStorage {
   
   // Category operations
   getCategoriesByGame(gameId: string): Promise<Category[]>;
+  
+  // User operations
+  createUser(userData: InsertUser): Promise<DbUser>;
+  getUserByUsername(username: string): Promise<DbUser | undefined>;
+  getUserByEmail(email: string): Promise<DbUser | undefined>;
+  getUser(id: number): Promise<DbUser | undefined>;
+  updateUserPoints(id: number, points: number): Promise<DbUser | undefined>;
+  updateUserLevel(id: number, level: string): Promise<DbUser | undefined>;
+  
+  // Session store for auth
+  sessionStore: any;
 }
 
 export class MemStorage implements IStorage {
@@ -33,10 +44,15 @@ export class MemStorage implements IStorage {
   private teamsMap: Map<number, Team>;
   private categoriesMap: Map<number, Category>;
   private questionsMap: Map<number, Question>;
+  private usersMap: Map<number, DbUser>;
   
   private teamIdCounter: number;
   private categoryIdCounter: number;
   private questionIdCounter: number;
+  private userIdCounter: number;
+  
+  // Session store
+  public sessionStore: any;
   
   // Sample category names
   private categoryNames = [
@@ -189,10 +205,85 @@ export class MemStorage implements IStorage {
     this.teamsMap = new Map();
     this.categoriesMap = new Map();
     this.questionsMap = new Map();
+    this.usersMap = new Map();
     
     this.teamIdCounter = 1;
     this.categoryIdCounter = 1;
     this.questionIdCounter = 1;
+    this.userIdCounter = 1;
+    
+    // Session store will be initialized in auth.ts
+    this.sessionStore = null;
+  }
+  
+  // User operations
+  async createUser(userData: InsertUser): Promise<DbUser> {
+    const user: DbUser = {
+      id: this.userIdCounter++,
+      username: userData.username,
+      email: userData.email,
+      password: userData.password,
+      points: 0,
+      level: UserLevel.BRONZE,
+      gamesPlayed: 0,
+      gamesWon: 0,
+      created: new Date()
+    };
+    
+    this.usersMap.set(user.id, user);
+    return user;
+  }
+  
+  async getUserByUsername(username: string): Promise<DbUser | undefined> {
+    for (const user of this.usersMap.values()) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return undefined;
+  }
+  
+  async getUserByEmail(email: string): Promise<DbUser | undefined> {
+    for (const user of this.usersMap.values()) {
+      if (user.email === email) {
+        return user;
+      }
+    }
+    return undefined;
+  }
+  
+  async getUser(id: number): Promise<DbUser | undefined> {
+    return this.usersMap.get(id);
+  }
+  
+  async updateUserPoints(id: number, points: number): Promise<DbUser | undefined> {
+    const user = this.usersMap.get(id);
+    if (!user) return undefined;
+    
+    user.points = points;
+    
+    // Update user level based on points
+    if (points >= 1000) {
+      user.level = UserLevel.PLATINUM;
+    } else if (points >= 500) {
+      user.level = UserLevel.GOLD;
+    } else if (points >= 200) {
+      user.level = UserLevel.SILVER;
+    } else {
+      user.level = UserLevel.BRONZE;
+    }
+    
+    this.usersMap.set(id, user);
+    return user;
+  }
+  
+  async updateUserLevel(id: number, level: string): Promise<DbUser | undefined> {
+    const user = this.usersMap.get(id);
+    if (!user) return undefined;
+    
+    user.level = level;
+    this.usersMap.set(id, user);
+    return user;
   }
 
   async createGame(categoryCount: number, team1Name: string, team2Name: string): Promise<Game> {

@@ -9,6 +9,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
+import { useAuth } from "../hooks/use-auth";
+import { Loader2 } from "lucide-react";
 
 // تعريف مخططات التحقق من البيانات
 const loginSchema = z.object({
@@ -35,6 +37,17 @@ export default function AuthPage() {
   const searchParams = new URLSearchParams(window.location.search);
   const showRegister = searchParams.get("register") === "true";
   const [activeTab, setActiveTab] = useState<string>(showRegister ? "register" : "login");
+  
+  // استخدام سياق المصادقة
+  const { user, isLoading, loginMutation, registerMutation } = useAuth();
+  
+  // التحقق ما إذا كان المستخدم مسجل الدخول بالفعل
+  useEffect(() => {
+    if (user) {
+      // إذا كان المستخدم مسجل الدخول، توجيهه إلى الصفحة الرئيسية
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   // نموذج تسجيل الدخول
   const loginForm = useForm<LoginFormValues>({
@@ -58,19 +71,23 @@ export default function AuthPage() {
 
   // معالجة تسجيل الدخول
   const onLoginSubmit = (values: LoginFormValues) => {
-    console.log("Login values:", values);
-    // سيتم تنفيذ هنا طلب API للمصادقة
-    // بعد نجاح تسجيل الدخول، سيتم التوجيه إلى الصفحة الرئيسية
-    navigate("/");
+    loginMutation.mutate(values);
   };
 
   // معالجة التسجيل
   const onRegisterSubmit = (values: RegisterFormValues) => {
-    console.log("Register values:", values);
-    // سيتم تنفيذ هنا طلب API للتسجيل
-    // بعد نجاح التسجيل، سيتم التوجيه إلى الصفحة الرئيسية
-    navigate("/");
+    const { confirmPassword, ...userData } = values;
+    registerMutation.mutate(userData);
   };
+  
+  // عرض مؤشر التحميل أثناء التحقق من حالة المصادقة
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // تحديث العنوان عند تغيير التبويب
   useEffect(() => {
@@ -138,9 +155,13 @@ export default function AuthPage() {
                     <Button 
                       type="submit" 
                       className="w-full"
-                      disabled={loginForm.formState.isSubmitting}
+                      disabled={loginMutation.isPending || loginForm.formState.isSubmitting}
                     >
-                      {loginForm.formState.isSubmitting ? "جاري التحميل..." : "تسجيل الدخول"}
+                      {loginMutation.isPending || loginForm.formState.isSubmitting ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> جاري التحميل...</>
+                      ) : (
+                        "تسجيل الدخول"
+                      )}
                     </Button>
                   </CardFooter>
                 </form>

@@ -527,13 +527,40 @@ export class DatabaseStorage implements IStorage {
   
   // وظيفة مساعدة لإنشاء أسئلة عشوائية لتصنيف معين
   private generateQuestionsForCategory(categoryId: number, gameId: string): Question[] {
-    // أسئلة افتراضية للتجربة
     const questions: Question[] = [];
-    
-    // إنشاء 6 أسئلة: 3 للفريق الأول و3 للفريق الثاني
-    // وبمستويات صعوبة مختلفة (سهل، متوسط، صعب)
     const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
     const points = { [DifficultyLevel.EASY]: 10, [DifficultyLevel.MEDIUM]: 20, [DifficultyLevel.HARD]: 30 };
+
+    // Generate 2 questions for each difficulty level, 1 for each team
+    difficulties.forEach(difficulty => {
+      // Question for team 1
+      questions.push({
+        id: questions.length + 1,
+        text: `سؤال ${difficulty} (${questions.length + 1}) للفريق 1`,
+        answer: `إجابة السؤال ${questions.length + 1}`,
+        difficulty,
+        points: points[difficulty],
+        categoryId,
+        gameId,
+        teamId: 1,
+        isAnswered: false
+      });
+
+      // Question for team 2
+      questions.push({
+        id: questions.length + 1,
+        text: `سؤال ${difficulty} (${questions.length + 1}) للفريق 2`, 
+        answer: `إجابة السؤال ${questions.length + 1}`,
+        difficulty,
+        points: points[difficulty],
+        categoryId,
+        gameId,
+        teamId: 2,
+        isAnswered: false
+      });
+    });
+
+    return questions;
     
     // سنستخدم اسم التصنيف ورقم معرفه لإنشاء أسئلة مختلفة قليلاً
     const categoryTypes = ["عام", "تاريخي", "ثقافي", "رياضي", "فني", "علمي"];

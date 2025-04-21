@@ -20,6 +20,7 @@ interface GameContextType {
   getCurrentQuestion: () => Question | null;
   getCurrentTeam: () => { id: number; name: string; score: number } | null;
   isGameCompleted: () => boolean;
+  createGameLog: (action: string, details?: Record<string, any>, teamId?: number, questionId?: number, categoryId?: number) => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -203,6 +204,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       await apiRequest('POST', `/api/games/${game.id}/start`);
       
+      // إنشاء سجل لبدء اللعبة
+      await createGameLog('start_game', {
+        gameName: game.name,
+        team1: game.team1.name,
+        team2: game.team2.name
+      });
+      
       // تحويل المستخدم إلى صفحة اللعبة
       navigate('/play');
       
@@ -248,6 +256,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       await apiRequest('PUT', `/api/games/${game.id}/current-category`, { category: categoryName });
       await apiRequest('PUT', `/api/games/${game.id}/state`, { state: GameState.DIFFICULTY_SELECTION });
+      
+      // تسجيل اختيار الفئة
+      const category = game.categories.find(c => c.name === categoryName);
+      await createGameLog('select_category', {
+        categoryName,
+        categoryId: category?.id,
+        teamName: getCurrentTeam()?.name
+      }, game.currentTeamId, undefined, category?.id);
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار الفئة';
       setError(errorMessage);
@@ -265,6 +282,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       await apiRequest('PUT', `/api/games/${game.id}/current-difficulty`, { difficulty });
       await apiRequest('PUT', `/api/games/${game.id}/state`, { state: GameState.QUESTION });
+      
+      // تسجيل اختيار مستوى الصعوبة
+      const category = game.categories.find(c => c.name === game.currentCategory);
+      await createGameLog('select_difficulty', {
+        difficulty,
+        categoryName: game.currentCategory,
+        teamName: getCurrentTeam()?.name
+      }, game.currentTeamId, undefined, category?.id);
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار المستوى';
       setError(errorMessage);
@@ -336,6 +362,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // Mark question as answered
       await apiRequest('PUT', `/api/questions/${questionId}/answered`, { gameId: game.id });
       
+      // تسجيل الإجابة على السؤال
+      const category = game.categories.find(c => c.name === game.currentCategory);
+      await createGameLog('answer_question', {
+        isCorrect,
+        questionText: currentQuestion.text,
+        difficulty: currentQuestion.difficulty,
+        categoryName: game.currentCategory,
+        teamName: getCurrentTeam()?.name,
+        points: isCorrect ? currentQuestion.points : 0
+      }, game.currentTeamId, questionId, category?.id);
+      
       // Update score if correct
       if (isCorrect) {
         const points = currentQuestion.points;
@@ -375,6 +412,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
     
     try {
       await apiRequest('POST', `/api/games/${game.id}/end`);
+      
+      // تسجيل انتهاء اللعبة
+      await createGameLog('end_game', {
+        team1Score: game.team1.score,
+        team2Score: game.team2.score,
+        winner: game.team1.score > game.team2.score ? game.team1.name : 
+                game.team1.score < game.team2.score ? game.team2.name : 'تعادل',
+        gameDuration: new Date().getTime() - new Date().getTime() // لا نستطيع حساب المدة بدقة هنا
+      });
+      
+      toast({
+        title: "انتهت اللعبة",
+        description: `انتهت اللعبة بنتيجة: ${game.team1.name} (${game.team1.score}) - ${game.team2.name} (${game.team2.score})`,
+        variant: "default"
+      });
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء إنهاء اللعبة';
       setError(errorMessage);
@@ -424,6 +477,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return true;
   };
 
+  // وظيفة إنشاء سجل للعبة
+  const createGameLog = async (
+    action: string,
+    details?: Record<string, any>,
+    teamId?: number,
+    questionId?: number,
+    categoryId?: number
+  ) => {
+    if (!game) return;
+    
+    try {
+      await apiRequest('POST', `/api/games/${game.id}/logs`, {
+        action,
+        teamId,
+        questionId,
+        categoryId,
+        details
+      });
+    } catch (error) {
+      console.error('Error creating game log:', error);
+    }
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -441,7 +517,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         startNewGame,
         getCurrentQuestion,
         getCurrentTeam,
-        isGameCompleted
+        isGameCompleted,
+        createGameLog
       }}
     >
       {children}

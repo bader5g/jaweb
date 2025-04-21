@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { X, Info, Award, AlertCircle } from 'lucide-react';
-import { useGame } from '@/lib/gameContext';
-import { GameLogType } from '@shared/schema';
-import { apiRequest } from '@/lib/queryClient';
 import { useQuery } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { CircleCheck, CircleX, Clock, Users, Phone, SkipForward, Trophy, PlusCircle, User, Category } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface GameLogModalProps {
   isOpen: boolean;
@@ -13,148 +20,170 @@ interface GameLogModalProps {
   gameId: string;
 }
 
+interface GameLog {
+  id: number;
+  gameId: string;
+  timestamp: string;
+  action: string;
+  teamId?: number;
+  questionId?: number;
+  categoryId?: number;
+  details?: Record<string, any>;
+}
+
 export default function GameLogModal({ isOpen, onClose, gameId }: GameLogModalProps) {
-  const [selectedGameId, setSelectedGameId] = useState<string>(gameId);
-  const [previousGames, setPreviousGames] = useState<{ id: string, name: string }[]>([]);
+  const { toast } = useToast();
   
-  // Fetch game logs for the selected game
-  const { data: logs, isLoading } = useQuery({
-    queryKey: ['/api/games', selectedGameId, 'logs'], 
-    queryFn: async () => {
-      const res = await apiRequest('GET', `/api/games/${selectedGameId}/logs`);
-      return await res.json() as GameLogType[];
-    },
-    enabled: isOpen && !!selectedGameId
+  // استعلام للحصول على سجلات اللعبة
+  const { data: gameLogs, isLoading, error } = useQuery<GameLog[]>({
+    queryKey: [`/api/games/${gameId}/logs`],
+    enabled: isOpen && !!gameId,
+    refetchInterval: isOpen ? 5000 : false, // تحديث كل 5 ثوانٍ أثناء فتح المودال
   });
   
-  // Fetch previous games
   useEffect(() => {
-    const fetchPreviousGames = async () => {
-      try {
-        // Note: In a real implementation, you would have an API endpoint to fetch previous games
-        // For now, we'll just add the current game
-        setPreviousGames([{ id: gameId, name: 'اللعبة الحالية' }]);
-      } catch (error) {
-        console.error('Error fetching previous games:', error);
-      }
-    };
-    
-    if (isOpen) {
-      fetchPreviousGames();
+    if (error) {
+      toast({
+        title: "خطأ في تحميل سجلات اللعبة",
+        description: "تعذر تحميل سجلات اللعبة. يرجى المحاولة مرة أخرى.",
+        variant: "destructive"
+      });
     }
-  }, [isOpen, gameId]);
+  }, [error, toast]);
   
-  // بدون وجود المشغل، تستخدم هذه الدالة لترجمة نوع الإجراء إلى نص مفهوم
-  const getActionText = (action: string, details?: Record<string, any>): string => {
+  // وظيفة للحصول على العنوان المناسب للإجراء
+  const getActionTitle = (action: string): string => {
     switch (action) {
-      case 'select_category':
-        return `اختيار فئة: ${details?.categoryName || ''}`;
-      case 'select_difficulty':
-        return `اختيار مستوى صعوبة: ${details?.difficulty || ''}`;
-      case 'answer_question':
-        return `إجابة سؤال ${details?.isCorrect ? 'صحيحة' : 'خاطئة'}`;
-      case 'update_score':
-        return `تغيير النقاط: ${details?.changeAmount > 0 ? '+' : ''}${details?.changeAmount || 0}`;
       case 'start_game':
         return 'بدء اللعبة';
       case 'end_game':
         return 'انتهاء اللعبة';
-      case 'change_team':
-        return `تغيير الدور إلى: ${details?.teamName || ''}`;
+      case 'select_category':
+        return 'اختيار فئة';
+      case 'select_difficulty':
+        return 'اختيار مستوى الصعوبة';
+      case 'answer_question':
+        return 'إجابة سؤال';
+      case 'update_score':
+        return 'تعديل النقاط';
       case 'use_help':
-        return `استخدام مساعدة: ${details?.helpType || ''}`;
+        return 'استخدام وسيلة مساعدة';
       default:
         return action;
     }
   };
   
-  // رمز لنوع الإجراء
-  const getActionIcon = (action: string, details?: Record<string, any>) => {
-    switch (action) {
+  // وظيفة للحصول على الأيقونة المناسبة للإجراء
+  const getActionIcon = (log: GameLog) => {
+    switch (log.action) {
+      case 'start_game':
+        return <Clock className="h-4 w-4 text-blue-600" />;
+      case 'end_game':
+        return <Trophy className="h-4 w-4 text-yellow-600" />;
+      case 'select_category':
+        return <Category className="h-4 w-4 text-purple-600" />;
+      case 'select_difficulty':
+        return <User className="h-4 w-4 text-indigo-600" />;
       case 'answer_question':
-        return details?.isCorrect 
-          ? <div className="p-1 bg-green-100 rounded-full"><Award className="h-4 w-4 text-green-600" /></div>
-          : <div className="p-1 bg-red-100 rounded-full"><AlertCircle className="h-4 w-4 text-red-600" /></div>;
+        return log.details?.isCorrect ? 
+          <CircleCheck className="h-4 w-4 text-green-600" /> : 
+          <CircleX className="h-4 w-4 text-red-600" />;
+      case 'update_score':
+        return <PlusCircle className="h-4 w-4 text-blue-600" />;
+      case 'use_help':
+        if (log.details?.helpType === 'phone_friend') {
+          return <Phone className="h-4 w-4 text-blue-600" />;
+        } else if (log.details?.helpType === 'ask_audience') {
+          return <Users className="h-4 w-4 text-blue-600" />;
+        } else if (log.details?.helpType === 'extra_time') {
+          return <Clock className="h-4 w-4 text-blue-600" />;
+        } else if (log.details?.helpType === 'skip_question') {
+          return <SkipForward className="h-4 w-4 text-blue-600" />;
+        }
+        return <Users className="h-4 w-4 text-blue-600" />;
       default:
-        return <div className="p-1 bg-blue-100 rounded-full"><Info className="h-4 w-4 text-blue-600" /></div>;
+        return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
   
-  if (!isOpen) return null;
+  // وظيفة للحصول على تفاصيل الإجراء
+  const getActionDetails = (log: GameLog): string => {
+    switch (log.action) {
+      case 'start_game':
+        return `بدأت اللعبة "${log.details?.gameName || 'لعبة جديدة'}" بين ${log.details?.team1} و ${log.details?.team2}`;
+      case 'end_game':
+        return `انتهت اللعبة بنتيجة: ${log.details?.winner} فائز!`;
+      case 'select_category':
+        return `اختار ${log.details?.teamName} فئة "${log.details?.categoryName}"`;
+      case 'select_difficulty':
+        return `اختار ${log.details?.teamName} مستوى الصعوبة "${log.details?.difficulty}"`;
+      case 'answer_question':
+        return log.details?.isCorrect 
+          ? `أجاب ${log.details?.teamName} إجابة صحيحة على سؤال في "${log.details?.categoryName}" (+${log.details?.points} نقطة)` 
+          : `أجاب ${log.details?.teamName} إجابة خاطئة على سؤال في "${log.details?.categoryName}"`;
+      case 'update_score':
+        const change = log.details?.changeAmount > 0 ? 
+          `+${log.details?.changeAmount}` : 
+          `${log.details?.changeAmount}`;
+        return `تم تعديل نقاط ${log.details?.teamName} (${change}) = ${log.details?.newScore}`;
+      case 'use_help':
+        return `استخدم ${log.details?.teamName} وسيلة المساعدة "${log.details?.helpName}"`;
+      default:
+        return JSON.stringify(log.details || {});
+    }
+  };
+  
+  // تنسيق الوقت المعروض
+  const formatTimestamp = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('ar-SA', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
   
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-lg">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800">سجل اللعبة</h2>
-          
-          <button 
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors" 
-            onClick={onClose}
-          >
-            <X className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md md:max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-center">سجل اللعبة</DialogTitle>
+        </DialogHeader>
         
-        <div className="p-4 border-b border-gray-100">
-          <select 
-            className="w-full p-2 border border-gray-200 rounded-lg"
-            value={selectedGameId}
-            onChange={(e) => setSelectedGameId(e.target.value)}
-          >
-            {previousGames.map((game) => (
-              <option key={game.id} value={game.id}>{game.name || game.id}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4">
+        <ScrollArea className="max-h-[60vh] pr-4 pt-2">
           {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="w-8 h-8 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
+              <span className="mr-2">جاري التحميل...</span>
             </div>
-          ) : logs && logs.length > 0 ? (
-            <div className="space-y-3 text-right">
-              {logs.map((log) => (
-                <div key={log.id} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-500 font-mono">
-                      {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true, locale: ar })}
-                    </span>
-                    <div className="flex items-center">
-                      {getActionIcon(log.action, log.details as Record<string, any>)}
-                      <span className="mr-2 font-medium text-gray-800">
-                        {getActionText(log.action, log.details as Record<string, any>)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600">
-                    {log.details && Object.keys(log.details).length > 0 && (
-                      <div className="bg-gray-100 p-2 rounded text-xs font-mono mt-2 overflow-x-auto">
-                        {JSON.stringify(log.details, null, 2)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+          ) : !gameLogs || gameLogs.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              لا توجد سجلات لهذه اللعبة
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-10">
-              لا توجد سجلات متاحة لهذه اللعبة
+            <div className="space-y-3">
+              {gameLogs
+                .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                .map((log) => (
+                  <div key={log.id} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      {getActionIcon(log)}
+                      <span className="font-medium text-sm">{getActionTitle(log.action)}</span>
+                      <span className="text-gray-400 text-xs mr-auto">{formatTimestamp(log.timestamp)}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-700">{getActionDetails(log)}</p>
+                  </div>
+                ))}
             </div>
           )}
-        </div>
+        </ScrollArea>
         
-        <div className="p-4 border-t border-gray-100">
-          <button
-            className="w-full py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            onClick={onClose}
-          >
-            إغلاق
-          </button>
-        </div>
-      </div>
-    </div>
+        <Separator className="my-2" />
+        
+        <DialogFooter className="flex justify-center sm:justify-end">
+          <Button variant="outline" onClick={onClose}>إغلاق</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

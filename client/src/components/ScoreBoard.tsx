@@ -32,6 +32,26 @@ export default function ScoreBoard() {
     updateTeamScore(teamId, amount);
   };
   
+  const handleScoreChangeWithLog = async (teamId: number, amount: number) => {
+    // تفعيل الحركة والتحديث كما كان من قبل
+    handleScoreChange(teamId, amount);
+    
+    // إضافة سجل للتغيير
+    try {
+      await apiRequest('POST', `/api/games/${game.id}/logs`, {
+        action: 'update_score',
+        teamId,
+        details: {
+          changeAmount: amount,
+          teamName: teamId === game.team1.id ? game.team1.name : game.team2.name,
+          newScore: teamId === game.team1.id ? game.team1.score + amount : game.team2.score + amount
+        }
+      });
+    } catch (error) {
+      console.error('Error logging score change:', error);
+    }
+  };
+  
   return (
     <div className="mb-10">
       <div className="flex flex-wrap justify-between items-stretch gap-4">
@@ -72,7 +92,7 @@ export default function ScoreBoard() {
                   variant="outline" 
                   size="icon" 
                   className="h-10 w-10 rounded-full bg-white/90 hover:bg-white"
-                  onClick={() => handleScoreChange(game.team1.id, 1)}
+                  onClick={() => handleScoreChangeWithLog(game.team1.id, 1)}
                 >
                   <PlusCircle className="h-6 w-6 text-blue-600" />
                 </Button>
@@ -80,12 +100,15 @@ export default function ScoreBoard() {
                   variant="outline" 
                   size="icon" 
                   className="h-10 w-10 rounded-full bg-white/90 hover:bg-white"
-                  onClick={() => handleScoreChange(game.team1.id, -1)}
+                  onClick={() => handleScoreChangeWithLog(game.team1.id, -1)}
                 >
                   <MinusCircle className="h-6 w-6 text-blue-600" />
                 </Button>
               </div>
             </div>
+            
+            {/* وسائل المساعدة للفريق الأول */}
+            <TeamHelpOptions teamId={game.team1.id} gameId={game.id} />
           </div>
         </motion.div>
         
@@ -104,6 +127,17 @@ export default function ScoreBoard() {
             <Clock className="h-4 w-4" />
             <span className="text-sm">{game.answerTime} ثانية</span>
           </div>
+          
+          {/* زر عرض سجل اللعبة */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 text-xs gap-1 bg-white/90 text-gray-700"
+            onClick={() => setShowGameLog(true)}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            سجل اللعبة
+          </Button>
         </div>
         
         {/* الفريق الثاني */}
@@ -143,7 +177,7 @@ export default function ScoreBoard() {
                   variant="outline" 
                   size="icon" 
                   className="h-10 w-10 rounded-full bg-white/90 hover:bg-white"
-                  onClick={() => handleScoreChange(game.team2.id, 1)}
+                  onClick={() => handleScoreChangeWithLog(game.team2.id, 1)}
                 >
                   <PlusCircle className="h-6 w-6 text-red-600" />
                 </Button>
@@ -151,12 +185,15 @@ export default function ScoreBoard() {
                   variant="outline" 
                   size="icon" 
                   className="h-10 w-10 rounded-full bg-white/90 hover:bg-white"
-                  onClick={() => handleScoreChange(game.team2.id, -1)}
+                  onClick={() => handleScoreChangeWithLog(game.team2.id, -1)}
                 >
                   <MinusCircle className="h-6 w-6 text-red-600" />
                 </Button>
               </div>
             </div>
+            
+            {/* وسائل المساعدة للفريق الثاني */}
+            <TeamHelpOptions teamId={game.team2.id} gameId={game.id} />
           </div>
         </motion.div>
       </div>
@@ -171,6 +208,15 @@ export default function ScoreBoard() {
         </div>
         <div className="h-px bg-gradient-to-r from-gray-300 via-gray-300 to-transparent w-full"></div>
       </div>
+      
+      {/* مودال سجل اللعبة */}
+      {showGameLog && (
+        <GameLogModal 
+          isOpen={showGameLog} 
+          onClose={() => setShowGameLog(false)} 
+          gameId={game.id} 
+        />
+      )}
     </div>
   );
 }

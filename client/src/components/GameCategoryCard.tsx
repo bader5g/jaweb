@@ -14,7 +14,7 @@ interface GameCategoryCardProps {
 
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
-  
+
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -49,7 +49,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     if (name.includes('math') || name.includes('رياضيات')) return 'Calculator';
     return 'BookOpen';
   };
-  
+
   // تحديد لون الفئة بناءً على اسمها
   const getCategoryColor = () => {
     const name = category.name.toLowerCase();
@@ -66,10 +66,10 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     if (name.includes('math') || name.includes('رياضيات')) return 'cyan';
     return 'violet';
   };
-  
+
   const color = getCategoryColor();
   const iconName = getCategoryIcon();
-  
+
   // تجميع الأسئلة حسب الصعوبة والفريق
   const getQuestionsByDifficulty = () => {
     const result = {
@@ -86,7 +86,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         team2: [] as Question[]
       }
     };
-    
+
     // ملاحظة: في قاعدة البيانات، الأسئلة تم تخزينها بمعرفات 1 و 2 للفرق
     // ولكن معرفات الفرق الفعلية قد تكون مختلفة، لذلك نستخدم المؤشر (الأول أو الثاني)
     category.questions.forEach(q => {
@@ -100,65 +100,65 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         result.hard[team].push(q);
       }
     });
-    
+
     return result;
   };
-  
+
   const questionsByDifficulty = getQuestionsByDifficulty();
-  
+
   // تحقق من المستويات المتبقية للفريق الحالي
   const getRemainingLevelsForCurrentTeam = () => {
     if (!game) return [];
-    
+
     const currentTeamId = game.currentTeamId;
     const teamKey = currentTeamId === game.team1.id ? 'team1' : 'team2';
-    
+
     const levels = [];
-    
+
     // نتحقق من وجود أسئلة غير مجابة في كل مستوى للفريق الحالي
     if (questionsByDifficulty.easy[teamKey].some(q => !q.isAnswered)) {
       levels.push(DifficultyLevel.EASY);
     }
-    
+
     if (questionsByDifficulty.medium[teamKey].some(q => !q.isAnswered)) {
       levels.push(DifficultyLevel.MEDIUM);
     }
-    
+
     if (questionsByDifficulty.hard[teamKey].some(q => !q.isAnswered)) {
       levels.push(DifficultyLevel.HARD);
     }
-    
+
     return levels;
   };
-  
+
   // حساب عدد الأسئلة المتبقية
   const remainingQuestions = () => {
     // استخدام القيم الثابتة 1 و 2 للفرق بدلاً من معرفات الفرق الحالية
     const team1Questions = category.questions.filter(q => q.teamId === 1 && !q.isAnswered);
     const team2Questions = category.questions.filter(q => q.teamId === 2 && !q.isAnswered);
-    
+
     return {
       team1: team1Questions.length,
       team2: team2Questions.length,
       total: team1Questions.length + team2Questions.length
     };
   };
-  
+
   const remaining = remainingQuestions();
-  
+
   // تحديد إذا كانت الفئة مكتملة
   const isCompleted = remaining.total === 0;
-  
+
   // الحصول على نسبة الأسئلة المجابة
   const completionPercentage = Math.round(
     ((6 - remaining.total) / 6) * 100
   );
-  
+
   // معالجة النقر على البطاقة - لم تعد مطلوبة
   const handleCardClick = () => {
     // فارغة لأن الأزرار ستكون ظاهرة دائماً
   };
-  
+
   // معالجة اختيار المستوى
   const handleSelectDifficulty = (difficulty: string) => {
     if (!isCompleted) {
@@ -168,7 +168,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
       }, 200);
     }
   };
-  
+
   // تحويل المستوى إلى عنوان بالعربية
   const getDifficultyLabel = (difficulty: string): string => {
     switch (difficulty) {
@@ -182,7 +182,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         return 'سهل';
     }
   };
-  
+
   // تحديد لون المستوى
   const getDifficultyColor = (difficulty: string): string => {
     switch (difficulty) {
@@ -196,14 +196,14 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         return 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700';
     }
   };
-  
+
   // التحقق مما إذا كان السؤال متاحاً للفريق الحالي
   const isQuestionAvailableForCurrentTeam = (difficulty: string): boolean => {
     if (!game) return false;
-    
+
     const currentTeamId = game.currentTeamId;
     const teamKey = currentTeamId === game.team1.id ? 'team1' : 'team2';
-    
+
     let questions;
     if (difficulty === DifficultyLevel.EASY) {
       questions = questionsByDifficulty.easy[teamKey];
@@ -214,17 +214,17 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     } else {
       return false;
     }
-    
+
     return questions.some(q => !q.isAnswered);
   };
-  
+
   // الحصول على أيقونة حالة السؤال
   const getQuestionStatusIcon = (difficulty: string, teamIndex: number) => {
     // استخدام رقم تسلسلي للفريق بدلاً من معرف الفريق
     // teamIndex = 1 للفريق الأول و teamIndex = 2 للفريق الثاني
     const teamKey = teamIndex === 1 ? 'team1' : 'team2';
     let questions;
-    
+
     if (difficulty === DifficultyLevel.EASY) {
       questions = questionsByDifficulty.easy[teamKey];
     } else if (difficulty === DifficultyLevel.MEDIUM) {
@@ -234,22 +234,30 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     } else {
       return <HelpCircle className="h-4 w-4 text-gray-400" />;
     }
-    
+
     if (!questions || questions.length === 0) {
       return <HelpCircle className="h-4 w-4 text-gray-400" />;
     }
-    
+
     const question = questions[0];
     if (!question.isAnswered) {
       return <HelpCircle className="h-4 w-4 text-blue-500" />;
     }
-    
+
     return <Check className="h-4 w-4 text-green-500" />;
   };
-  
+
   const currentTeamId = game?.currentTeamId;
   const currentTeamName = currentTeamId === game?.team1.id ? game?.team1.name : game?.team2.name;
-  
+
+  // Placeholder for points -  Replace with actual point calculation logic
+  const points = {
+    [DifficultyLevel.EASY]: remaining.team1,
+    [DifficultyLevel.MEDIUM]: 0, // Placeholder
+    [DifficultyLevel.HARD]: remaining.team2
+  };
+
+
   return (
     <motion.div
       className={`category-card ${isCompleted ? 'opacity-75' : ''}`}
@@ -262,13 +270,13 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         {/* خلفية مموجة للبطاقة */}
         <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-${color}-100 opacity-50`}></div>
         <div className={`absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-${color}-50 opacity-50`}></div>
-        
+
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <h3 className={`text-2xl font-bold text-gray-800 ${isCompleted ? '' : `text-${color}-700`}`}>
               {category.name}
             </h3>
-            
+
             <div className="flex items-center gap-2">
               <div className={`p-3 rounded-xl ${isCompleted ? 'bg-gray-200' : `bg-${color}-100`}`}>
                 {isCompleted ? 
@@ -278,7 +286,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               </div>
             </div>
           </div>
-          
+
           <div className="mb-4">
             <div className="flex justify-between mb-1">
               <span className="text-sm font-medium text-gray-600">إكتمال الفئة</span>
@@ -288,29 +296,29 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               <div className={`progress-value ${isCompleted ? 'bg-gray-400' : `bg-${color}-500`}`} style={{ width: `${completionPercentage}%` }}></div>
             </div>
           </div>
-          
+
           <div className="flex justify-between items-center text-sm text-gray-700">
             <div className="flex items-center">
               <div className="h-3 w-3 rounded-full bg-blue-600 mr-2"></div>
-              <span>{game?.team1.name}: <span className="font-bold">{remaining.team1}</span></span>
+              <span>النقاط: <span className="font-bold">{points[DifficultyLevel.EASY]}</span></span>
             </div>
-            
+
             <div className="flex items-center">
               <div className="h-3 w-3 rounded-full bg-red-600 mr-2"></div>
-              <span>{game?.team2.name}: <span className="font-bold">{remaining.team2}</span></span>
+              <span>النقاط: <span className="font-bold">{points[DifficultyLevel.HARD]}</span></span>
             </div>
           </div>
-          
+
           {/* عرض أسئلة الفئة - دائماً ظاهرة */}
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="mb-3">
               <p className="text-center text-sm text-gray-600 mb-1">
                 دور الفريق: <span className="font-bold">{currentTeamName}</span>
               </p>
-              
+
               <p className="text-center text-xs text-gray-500">اختر رقم السؤال</p>
             </div>
-            
+
             <div className="space-y-3">
               {/* رقم 1 (بدلاً من سهل) */}
               <button
@@ -324,17 +332,17 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               >
                 <div className="flex items-center gap-2">
                   {getQuestionStatusIcon(DifficultyLevel.EASY, 1)}
-                  <span className="text-xs">{game?.team1.name}</span>
+                  <span className="text-xs">الفريق 1</span> {/* Changed team names to numbers */}
                 </div>
-                
+
                 <span className="text-lg font-bold">1</span>
-                
+
                 <div className="flex items-center gap-2">
-                  <span className="text-xs">{game?.team2.name}</span>
+                  <span className="text-xs">الفريق 2</span> {/* Changed team names to numbers */}
                   {getQuestionStatusIcon(DifficultyLevel.EASY, 2)}
                 </div>
               </button>
-              
+
               {/* رقم 2 (بدلاً من متوسط) */}
               <button
                 onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
@@ -347,17 +355,17 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               >
                 <div className="flex items-center gap-2">
                   {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 1)}
-                  <span className="text-xs">{game?.team1.name}</span>
+                  <span className="text-xs">الفريق 1</span> {/* Changed team names to numbers */}
                 </div>
-                
+
                 <span className="text-lg font-bold">2</span>
-                
+
                 <div className="flex items-center gap-2">
-                  <span className="text-xs">{game?.team2.name}</span>
+                  <span className="text-xs">الفريق 2</span> {/* Changed team names to numbers */}
                   {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 2)}
                 </div>
               </button>
-              
+
               {/* رقم 3 (بدلاً من صعب) */}
               <button
                 onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
@@ -370,19 +378,19 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               >
                 <div className="flex items-center gap-2">
                   {getQuestionStatusIcon(DifficultyLevel.HARD, 1)}
-                  <span className="text-xs">{game?.team1.name}</span>
+                  <span className="text-xs">الفريق 1</span> {/* Changed team names to numbers */}
                 </div>
-                
+
                 <span className="text-lg font-bold">3</span>
-                
+
                 <div className="flex items-center gap-2">
-                  <span className="text-xs">{game?.team2.name}</span>
+                  <span className="text-xs">الفريق 2</span> {/* Changed team names to numbers */}
                   {getQuestionStatusIcon(DifficultyLevel.HARD, 2)}
                 </div>
               </button>
             </div>
           </div>
-          
+
           {isCompleted && (
             <div className="absolute top-4 left-4 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs font-medium">
               تم الإكمال

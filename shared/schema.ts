@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -21,6 +21,16 @@ export const GameState = {
 } as const;
 
 export type GameStateType = typeof GameState[keyof typeof GameState];
+
+// Define user levels
+export const UserLevel = {
+  BRONZE: "bronze",
+  SILVER: "silver",
+  GOLD: "gold",
+  PLATINUM: "platinum",
+} as const;
+
+export type UserLevelType = typeof UserLevel[keyof typeof UserLevel];
 
 // Teams table
 export const teams = pgTable("teams", {
@@ -48,6 +58,19 @@ export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   gameId: text("game_id").notNull(),
+});
+
+// Users table
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  points: integer("points").notNull().default(0),
+  level: text("level").notNull().default(UserLevel.BRONZE),
+  gamesPlayed: integer("games_played").notNull().default(0),
+  gamesWon: integer("games_won").notNull().default(0),
+  created: timestamp("created").notNull().defaultNow(),
 });
 
 // Questions table
@@ -102,20 +125,61 @@ export const gameSchema = z.object({
 
 export type Game = z.infer<typeof gameSchema>;
 
+// User schema for API responses
+export const userResponseSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  email: z.string().email(),
+  points: z.number(),
+  level: z.string(),
+  gamesPlayed: z.number(),
+  gamesWon: z.number(),
+  created: z.date().or(z.string()),
+});
+
+export type UserResponse = z.infer<typeof userResponseSchema>;
+
 // Insert schemas
 export const insertTeamSchema = createInsertSchema(teams).omit({ id: true });
 export const insertGameSchema = createInsertSchema(games).omit({ id: true });
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
 export const insertQuestionSchema = createInsertSchema(questions).omit({ id: true });
+export const insertUserSchema = createInsertSchema(users).omit({ 
+  id: true, 
+  points: true, 
+  level: true,
+  gamesPlayed: true,
+  gamesWon: true,
+  created: true
+});
+
+// Extend user registration schema with password confirmation
+export const registerUserSchema = insertUserSchema.extend({
+  confirmPassword: z.string().min(6),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 // Types for insert operations
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type InsertGame = z.infer<typeof insertGameSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+
+// Login schema
+export const loginUserSchema = z.object({
+  username: z.string().min(3),
+  password: z.string().min(6),
+});
+
+export type LoginUser = z.infer<typeof loginUserSchema>;
 
 // Types for select operations
 export type Team = typeof teams.$inferSelect;
 export type GameRecord = typeof games.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Question = typeof questions.$inferSelect;
+export type DbUser = typeof users.$inferSelect;

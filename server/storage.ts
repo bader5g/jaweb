@@ -4,7 +4,8 @@ import {
   games, GameRecord, InsertGame,
   categories, Category, InsertCategory,
   questions, Question, InsertQuestion,
-  Game, gameSchema, DifficultyLevel
+  users, DbUser, InsertUser,
+  Game, gameSchema, DifficultyLevel, UserLevel
 } from "@shared/schema";
 
 export interface IStorage {

@@ -117,19 +117,17 @@ export default function ScoreBoard() {
         </motion.div>
         
         {/* لوحة دور الفريق */}
-        <div className="flex flex-col items-center justify-center bg-glass px-8 py-4 rounded-2xl shadow-lg mb-4 sm:mb-0 min-w-[200px] border border-white/30">
-          <h3 className="text-base font-medium text-gray-600 mb-1">دور الفريق</h3>
-          <div className="flex items-center gap-2">
-            {isTeam1Turn && <ArrowRight className="h-5 w-5 text-blue-500" />}
-            <p className="text-xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-              {currentTeam?.name}
-            </p>
-            {isTeam2Turn && <ArrowLeft className="h-5 w-5 text-red-500" />}
+        <div className="flex flex-col items-center justify-center bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md px-8 py-4 rounded-2xl shadow-lg mb-4 sm:mb-0 min-w-[200px] border border-white/50">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            {isTeam1Turn && <ArrowRight className="h-6 w-6 text-blue-500" />}
+            <Star className="h-7 w-7 text-yellow-400 animate-pulse-slow" /> 
+            {isTeam2Turn && <ArrowLeft className="h-6 w-6 text-red-500" />}
           </div>
           
-          <div className="mt-2 flex items-center gap-1 text-gray-500">
-            <Clock className="h-4 w-4" />
-            <span className="text-sm">{game.answerTime} ثانية</span>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
+              {currentTeam?.name}
+            </p>
           </div>
           
           {/* زر عرض سجل اللعبة */}

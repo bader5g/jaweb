@@ -116,6 +116,7 @@ const UserProfile = () => {
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user } = useAuth();
 
   // تأثير للتحقق من التمرير
   useEffect(() => {
@@ -162,6 +163,14 @@ export default function Navbar() {
               <span>المتصدرون</span>
             </div>
           </Link>
+          {user && (
+            <Link href="/admin/categories">
+              <div className="flex items-center gap-1 text-white/90 hover:text-white transition-colors duration-200">
+                <Award className="h-4 w-4" />
+                <span>إدارة التصنيفات</span>
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* قائمة الهاتف المحمول */}
@@ -202,6 +211,14 @@ export default function Navbar() {
                 <span className="text-lg">المتصدرون</span>
               </div>
             </Link>
+            {user && (
+              <Link href="/admin/categories" onClick={() => setIsMenuOpen(false)}>
+                <div className="flex items-center gap-2 text-white py-2">
+                  <Award className="h-5 w-5" />
+                  <span className="text-lg">إدارة التصنيفات</span>
+                </div>
+              </Link>
+            )}
             <div className="border-t border-white/10 pt-4 mt-2">
               <UserProfile />
             </div>

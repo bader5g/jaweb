@@ -21,6 +21,9 @@ interface CategoryCardProps {
     questionCount?: number;
     isActive?: boolean;
     imageUrl?: string;
+    parentId?: number | null;
+    order?: number;
+    children?: Array<any>;
   };
   isSelected?: boolean;
   onSelect?: (id: number) => void;
@@ -127,8 +130,24 @@ export default function CategoryCard({
               {getIcon()}
             </div>
           )}
-          <div>
-            <h3 className="text-xl font-bold">{category.nameAr}</h3>
+          <div className="flex-grow">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">{category.nameAr}</h3>
+              
+              {/* إذا كان التصنيف له تصنيفات فرعية أو له أب */}
+              {(category.children?.length || category.parentId) && (
+                <div className="flex items-center">
+                  {category.parentId && (
+                    <Badge variant="outline" className="mr-2">تصنيف فرعي</Badge>
+                  )}
+                  {category.children?.length ? (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1">
+                      {category.children.length} فرعي
+                    </Badge>
+                  ) : null}
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2 mt-1">
               {category.questionCount && (
                 <Badge variant="outline" className="flex items-center gap-1">

@@ -96,6 +96,24 @@ export const questions = pgTable("questions", {
   isAnswered: boolean("is_answered").notNull().default(false),
 });
 
+// Type definition for category schema children
+type CategorySchemaType = {
+  id: number;
+  name: string;
+  nameAr: string;
+  icon: string;
+  color: string;
+  description?: string;
+  descriptionAr?: string;
+  difficultyLevel: string;
+  isActive: boolean;
+  questionCount?: number;
+  imageUrl?: string;
+  parentId?: number | null;
+  order?: number;
+  children?: Array<CategorySchemaType>;
+}
+
 // Category schema for UI
 export const categorySchema = z.object({
   id: z.number(),
@@ -111,7 +129,7 @@ export const categorySchema = z.object({
   imageUrl: z.string().optional(),
   parentId: z.number().nullable().optional(),
   order: z.number().optional().default(0),
-  children: z.lazy(() => z.array(categorySchema).optional()),
+  children: z.array(z.lazy(() => categorySchema)).optional(),
 });
 
 export type CategoryUI = z.infer<typeof categorySchema>;

@@ -11,6 +11,7 @@ import { GameProvider } from "./lib/gameContext";
 import { AuthProvider } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
 import AuthPage from "./pages/AuthPage";
+import AdminCategories from "./pages/AdminCategories";
 import Navbar from "./components/Navbar";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
           <Route path="/" component={Home} />
           <ProtectedRoute path="/setup" component={GameSetup} />
           <ProtectedRoute path="/play" component={GamePlay} />
+          <ProtectedRoute path="/admin/categories" component={AdminCategories} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>

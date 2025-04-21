@@ -62,9 +62,12 @@ export const categories = pgTable("categories", {
   color: text("color").notNull(), // لون البطاقة (مثل: primary, sky-500, amber-400)
   description: text("description"),
   descriptionAr: text("description_ar"),
-  difficultyLevel: text("difficulty_level").default(DifficultyLevel.MEDIUM), // مستوى صعوبة الأسئلة
+  difficultyLevel: text("difficulty_level").default(DifficultyLevel.MEDIUM), // مستوى صعوبة الأسئلة في التصنيف
   isActive: boolean("is_active").default(true).notNull(),
   gameId: text("game_id"),
+  imageUrl: text("image_url"), // رابط صورة التصنيف المخصصة
+  parentId: integer("parent_id"), // معرف التصنيف الأب (null للتصنيفات الرئيسية)
+  order: integer("order").default(0), // ترتيب التصنيف ضمن المستوى نفسه
 });
 
 // Users table
@@ -105,6 +108,10 @@ export const categorySchema = z.object({
   difficultyLevel: z.string(),
   isActive: z.boolean(),
   questionCount: z.number().optional(),
+  imageUrl: z.string().optional(),
+  parentId: z.number().nullable().optional(),
+  order: z.number().optional().default(0),
+  children: z.lazy(() => z.array(categorySchema).optional()),
 });
 
 export type CategoryUI = z.infer<typeof categorySchema>;

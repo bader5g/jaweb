@@ -20,6 +20,7 @@ interface CategoryCardProps {
     difficultyLevel: string;
     questionCount?: number;
     isActive?: boolean;
+    imageUrl?: string;
   };
   isSelected?: boolean;
   onSelect?: (id: number) => void;
@@ -111,15 +112,24 @@ export default function CategoryCard({
       )}
       
       <div className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm h-full flex flex-col">
-        {/* رأس البطاقة مع الأيقونة */}
+        {/* رأس البطاقة مع الأيقونة أو الصورة المخصصة */}
         <div className="flex items-center gap-4 mb-3">
-          <div className={`p-3 rounded-full ${getBgColor()} text-white`}>
-            {getIcon()}
-          </div>
+          {category.imageUrl ? (
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+              <img 
+                src={category.imageUrl} 
+                alt={category.nameAr} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+          ) : (
+            <div className={`p-3 rounded-full ${getBgColor()} text-white`}>
+              {getIcon()}
+            </div>
+          )}
           <div>
             <h3 className="text-xl font-bold">{category.nameAr}</h3>
             <div className="flex items-center gap-2 mt-1">
-              {getDifficultyBadge()}
               {category.questionCount && (
                 <Badge variant="outline" className="flex items-center gap-1">
                   <Star className="h-3 w-3" />{category.questionCount} سؤال

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="100" viewBox="0 0 280 100">
+  <defs>
+    <linearGradient id="bluGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9" /> <!-- sky-500 -->
+      <stop offset="100%" stop-color="#3B82F6" /> <!-- blue-500 -->
+    </linearGradient>
+    <linearGradient id="darkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" /> <!-- blue-800 -->
+      <stop offset="100%" stop-color="#0284C7" /> <!-- sky-700 -->
+    </linearGradient>
+    <linearGradient id="lightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F0F9FF" /> <!-- sky-50 -->
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <filter id="innerShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feOffset dx="0" dy="1" result="offOut" />
+      <feGaussianBlur in="offOut" result="blurOut" stdDeviation="1" />
+      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+    </filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Logo Design - Professional & Modern -->
+  <g transform="translate(40, 50)" filter="url(#shadow)">
+    <!-- Background Shield/Diamond Shape -->
+    <polygon points="100,0 140,30 100,60 60,30" fill="url(#bluGradient)" opacity="0.12" />
+    <polygon points="100,5 135,30 100,55 65,30" fill="url(#bluGradient)" opacity="0.2" />
+    
+    <!-- Central Circle with Glowing Edge -->
+    <circle cx="100" cy="30" r="24" fill="#FFFFFF" stroke="url(#bluGradient)" stroke-width="2" />
+    
+    <!-- Question Mark -->
+    <text x="100" y="40" font-family="Tajawal, Arial" font-size="34" font-weight="bold" fill="url(#bluGradient)" text-anchor="middle" filter="url(#innerShadow)">؟</text>
+    
+    <!-- Knowledge/Learning Icons -->
+    <g transform="translate(100, 30) scale(0.04)" opacity="0.8" fill="url(#darkGradient)">
+      <!-- Stylized brain or knowledge element -->
+      <path d="M144 0a80 80 0 0 1 0 160h16V96H144a16 16 0 1 0 0 32V0zm96 0h16a80 80 0 0 1 0 160h-16V96h16a16 16 0 0 0 0-32V0z" />
+      <path d="M368 304h-16V192c0-44.2-35.8-80-80-80h-16v96h16a16 16 0 0 0 0-32V0h-96v176h16a16 16 0 0 0 0-32V48h-16C131.8 48 96 83.8 96 128v176H80c-44.2 0-80 35.8-80 80v160h80V304c0-8.8 7.2-16 16-16h256c8.8 0 16 7.2 16 16v240h80V384c0-44.2-35.8-80-80-80zM48 544V384c0-17.7 14.3-32 32-32V544H48zm448 0h-32V352c17.7 0 32 14.3 32 32v160z" />
+    </g>
+    
+    <!-- App Name -->
+    <text x="100" y="75" font-family="Tajawal, Arial" font-size="36" font-weight="bold" fill="url(#darkGradient)" text-anchor="middle">جاوب</text>
+    
+    <!-- Tagline -->
+    <text x="100" y="90" font-family="Tajawal, Arial" font-size="12" font-weight="medium" fill="#475569" text-anchor="middle">تحدي المعرفة والإبداع</text>
+    
+    <!-- Decorative Elements -->
+    <g opacity="0.7">
+      <!-- Rays -->
+      <line x1="100" y1="0" x2="100" y2="10" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="120" y1="10" x2="128" y2="2" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="130" y1="30" x2="140" y2="30" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="120" y1="50" x2="128" y2="58" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="100" y1="60" x2="100" y2="50" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="80" y1="50" x2="72" y2="58" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="70" y1="30" x2="60" y2="30" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      <line x1="80" y1="10" x2="72" y2="2" stroke="#0EA5E9" stroke-width="1.5" opacity="0.6" />
+      
+      <!-- Dots at ray ends -->
+      <circle cx="100" cy="0" r="2" fill="#0EA5E9" />
+      <circle cx="128" cy="2" r="2" fill="#0EA5E9" />
+      <circle cx="140" cy="30" r="2" fill="#0EA5E9" />
+      <circle cx="128" cy="58" r="2" fill="#0EA5E9" />
+      <circle cx="100" cy="60" r="2" fill="#0EA5E9" />
+      <circle cx="72" cy="58" r="2" fill="#0EA5E9" />
+      <circle cx="60" cy="30" r="2" fill="#0EA5E9" />
+      <circle cx="72" cy="2" r="2" fill="#0EA5E9" />
+    </g>
+    
+    <!-- Light sparkles -->
+    <circle cx="82" cy="12" r="1.5" fill="#FFFFFF" />
+    <circle cx="130" cy="22" r="1" fill="#FFFFFF" />
+    <circle cx="118" cy="48" r="1.5" fill="#FFFFFF" />
+    <circle cx="78" cy="45" r="1" fill="#FFFFFF" />
+  </g>
+</svg>

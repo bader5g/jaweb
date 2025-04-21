@@ -49,8 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginUser) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      try {
+        const res = await apiRequest("POST", "/api/login", credentials);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "فشل تسجيل الدخول");
+        }
+        return await res.json();
+      } catch (error) {
+        // تحويل أي خطأ إلى Error
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("حدث خطأ أثناء تسجيل الدخول");
+      }
     },
     onSuccess: (userData: UserWithoutPassword) => {
       queryClient.setQueryData(["/api/user"], userData);
@@ -70,8 +82,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: RegisterUser) => {
-      const res = await apiRequest("POST", "/api/register", userData);
-      return await res.json();
+      try {
+        const res = await apiRequest("POST", "/api/register", userData);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "فشل التسجيل");
+        }
+        return await res.json();
+      } catch (error) {
+        // تحويل أي خطأ إلى Error
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("حدث خطأ أثناء التسجيل");
+      }
     },
     onSuccess: (userData: UserWithoutPassword) => {
       queryClient.setQueryData(["/api/user"], userData);

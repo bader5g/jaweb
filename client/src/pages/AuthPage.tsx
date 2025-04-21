@@ -76,9 +76,8 @@ export default function AuthPage() {
 
   // معالجة التسجيل
   const onRegisterSubmit = (values: RegisterFormValues) => {
-    // نحذف حقل confirmPassword لأنه غير مطلوب في واجهة API
-    const { confirmPassword, ...userData } = values;
-    registerMutation.mutate(userData as any); // استخدام any لتجاوز مشكلة TypeScript
+    // نرسل نموذج التسجيل بالكامل بما في ذلك حقل تأكيد كلمة المرور
+    registerMutation.mutate(values);
   };
   
   // عرض مؤشر التحميل أثناء التحقق من حالة المصادقة

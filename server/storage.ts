@@ -30,6 +30,7 @@ export interface IStorage {
   getQuestionsByCategory(categoryId: number): Promise<Question[]>;
   
   // Category operations
+  getAllCategories(): Promise<Category[]>;
   getCategoriesByGame(gameId: string): Promise<Category[]>;
   
   // User operations
@@ -209,10 +210,163 @@ export class DatabaseStorage implements IStorage {
     throw new Error("Question operations not implemented yet");
   }
 
-  // Category operations - stub implementations
+  // Category operations
+  async getAllCategories(): Promise<Category[]> {
+    // بيانات ثابتة للتصنيفات (في المستقبل ستأتي من قاعدة البيانات)
+    const defaultCategories: Category[] = [
+      {
+        id: 1,
+        name: "History",
+        nameAr: "التاريخ",
+        icon: "BookOpen",
+        color: "amber-600",
+        description: "Test your knowledge about world history",
+        descriptionAr: "اختبر معلوماتك في التاريخ العالمي",
+        difficultyLevel: DifficultyLevel.MEDIUM,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 2,
+        name: "Science",
+        nameAr: "العلوم",
+        icon: "Atom",
+        color: "blue-500",
+        description: "Science facts and discoveries",
+        descriptionAr: "حقائق واكتشافات علمية",
+        difficultyLevel: DifficultyLevel.MEDIUM,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 3,
+        name: "Geography",
+        nameAr: "الجغرافيا",
+        icon: "Globe",
+        color: "green-500",
+        description: "Countries, capitals and landscapes",
+        descriptionAr: "الدول والعواصم والتضاريس",
+        difficultyLevel: DifficultyLevel.EASY,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 4,
+        name: "Literature",
+        nameAr: "الأدب",
+        icon: "BookText",
+        color: "purple-600",
+        description: "Books, authors and literary works",
+        descriptionAr: "الكتب والمؤلفين والأعمال الأدبية",
+        difficultyLevel: DifficultyLevel.HARD,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 5,
+        name: "Sports",
+        nameAr: "الرياضة",
+        icon: "Trophy",
+        color: "red-500",
+        description: "Sports teams, events and records",
+        descriptionAr: "الفرق الرياضية والأحداث والأرقام القياسية",
+        difficultyLevel: DifficultyLevel.EASY,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 6,
+        name: "Arts",
+        nameAr: "الفنون",
+        icon: "Palette",
+        color: "pink-500",
+        description: "Paintings, sculptures and artists",
+        descriptionAr: "اللوحات والمنحوتات والفنانين",
+        difficultyLevel: DifficultyLevel.MEDIUM,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 7,
+        name: "Technology",
+        nameAr: "التكنولوجيا",
+        icon: "Cpu",
+        color: "gray-700",
+        description: "Computers, software and innovations",
+        descriptionAr: "الحواسيب والبرمجيات والابتكارات",
+        difficultyLevel: DifficultyLevel.HARD,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 8,
+        name: "Movies",
+        nameAr: "الأفلام",
+        icon: "Film",
+        color: "yellow-600",
+        description: "Film directors, actors and titles",
+        descriptionAr: "المخرجين والممثلين وعناوين الأفلام",
+        difficultyLevel: DifficultyLevel.EASY,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 9,
+        name: "Music",
+        nameAr: "الموسيقى",
+        icon: "Music",
+        color: "indigo-500",
+        description: "Songs, artists and music history",
+        descriptionAr: "الأغاني والفنانين وتاريخ الموسيقى",
+        difficultyLevel: DifficultyLevel.MEDIUM,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 10,
+        name: "Food and Cuisine",
+        nameAr: "الطعام والمطبخ",
+        icon: "Utensils",
+        color: "green-600",
+        description: "Traditional dishes and culinary techniques",
+        descriptionAr: "الأطباق التقليدية وتقنيات الطهي",
+        difficultyLevel: DifficultyLevel.MEDIUM,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 11,
+        name: "Mathematics",
+        nameAr: "الرياضيات",
+        icon: "Calculator",
+        color: "blue-600",
+        description: "Numbers, shapes and mathematical concepts",
+        descriptionAr: "الأرقام والأشكال والمفاهيم الرياضية",
+        difficultyLevel: DifficultyLevel.HARD,
+        isActive: true,
+        gameId: null
+      },
+      {
+        id: 12,
+        name: "Religion",
+        nameAr: "الدين",
+        icon: "BookOpen",
+        color: "teal-600",
+        description: "Religious texts, figures and traditions",
+        descriptionAr: "النصوص والشخصيات والتقاليد الدينية",
+        difficultyLevel: DifficultyLevel.MEDIUM,
+        isActive: true,
+        gameId: null
+      }
+    ];
+    return defaultCategories;
+  }
+
   async getCategoriesByGame(gameId: string): Promise<Category[]> {
-    // Placeholder implementation
-    throw new Error("Category operations not implemented yet");
+    // ستقوم هذه الوظيفة بإرجاع التصنيفات المرتبطة بلعبة معينة
+    // لكن الآن سنستخدم البيانات الافتراضية
+    const allCategories = await this.getAllCategories();
+    return allCategories.slice(0, 8); // نرجع أول 8 تصنيفات
   }
 }
 

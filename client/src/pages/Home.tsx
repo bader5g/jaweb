@@ -2,28 +2,12 @@ import { Button } from "../components/ui/button";
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
 import { useGame } from "../lib/gameContext";
-import { Badge } from "../components/ui/badge";
-import { Checkbox } from "../components/ui/checkbox";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/dialog";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
-
-// قائمة فئات وهمية للعرض
-const SAMPLE_CATEGORIES = [
-  { id: 1, name: "التاريخ الإسلامي" },
-  { id: 2, name: "جغرافيا العالم" },
-  { id: 3, name: "العلوم والتكنولوجيا" },
-  { id: 4, name: "الرياضيات" },
-  { id: 5, name: "الأدب العربي" },
-  { id: 6, name: "الرياضة" },
-  { id: 7, name: "الفن والموسيقى" },
-  { id: 8, name: "الطب والصحة" },
-  { id: 9, name: "علوم الحاسوب" },
-  { id: 10, name: "الحيوانات والطبيعة" },
-  { id: 11, name: "تاريخ العالم" },
-  { id: 12, name: "الطبخ والطعام" },
-];
+import CategoryGrid from "../components/CategoryGrid";
+import { Shield, BrainCircuit, Timer } from "lucide-react";
 
 export default function Home() {
   const { startNewGame } = useGame();

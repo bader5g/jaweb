@@ -320,74 +320,92 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             </div>
 
             <div className="space-y-3">
-              {/* رقم 1 (بدلاً من سهل) */}
-              <button
-                onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
-                disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
-                className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
-                  isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
-                    : 'bg-gray-300 cursor-not-allowed'
-                } transition-colors flex justify-between items-center`}
-              >
-                <div className="flex items-center gap-2">
+              {/* أيقونات المستوى 1 */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <button
+                  onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
+                  disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
+                  className={`py-3 px-4 rounded-xl text-white font-medium ${
+                    isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  } transition-colors flex items-center justify-center`}
+                >
                   {getQuestionStatusIcon(DifficultyLevel.EASY, 1)}
-                  <span className="text-xs">الفريق 1</span> {/* Changed team names to numbers */}
-                </div>
+                  <span className="text-lg font-bold mr-2">1</span>
+                </button>
 
-                <span className="text-lg font-bold">1</span>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">الفريق 2</span> {/* Changed team names to numbers */}
+                <button
+                  onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
+                  disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
+                  className={`py-3 px-4 rounded-xl text-white font-medium ${
+                    isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  } transition-colors flex items-center justify-center`}
+                >
                   {getQuestionStatusIcon(DifficultyLevel.EASY, 2)}
-                </div>
-              </button>
+                  <span className="text-lg font-bold mr-2">1</span>
+                </button>
+              </div>
 
-              {/* رقم 2 (بدلاً من متوسط) */}
-              <button
-                onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
-                disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
-                className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
-                  isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
-                    : 'bg-gray-300 cursor-not-allowed'
-                } transition-colors flex justify-between items-center`}
-              >
-                <div className="flex items-center gap-2">
+              {/* أيقونات المستوى 2 */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <button
+                  onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
+                  disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
+                  className={`py-3 px-4 rounded-xl text-white font-medium ${
+                    isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  } transition-colors flex items-center justify-center`}
+                >
                   {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 1)}
-                  <span className="text-xs">الفريق 1</span> {/* Changed team names to numbers */}
-                </div>
+                  <span className="text-lg font-bold mr-2">2</span>
+                </button>
 
-                <span className="text-lg font-bold">2</span>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">الفريق 2</span> {/* Changed team names to numbers */}
+                <button
+                  onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
+                  disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
+                  className={`py-3 px-4 rounded-xl text-white font-medium ${
+                    isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  } transition-colors flex items-center justify-center`}
+                >
                   {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 2)}
-                </div>
-              </button>
+                  <span className="text-lg font-bold mr-2">2</span>
+                </button>
+              </div>
 
-              {/* رقم 3 (بدلاً من صعب) */}
-              <button
-                onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
-                disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
-                className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
-                  isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
-                    : 'bg-gray-300 cursor-not-allowed'
-                } transition-colors flex justify-between items-center`}
-              >
-                <div className="flex items-center gap-2">
+              {/* أيقونات المستوى 3 */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
+                  disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
+                  className={`py-3 px-4 rounded-xl text-white font-medium ${
+                    isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  } transition-colors flex items-center justify-center`}
+                >
                   {getQuestionStatusIcon(DifficultyLevel.HARD, 1)}
-                  <span className="text-xs">الفريق 1</span> {/* Changed team names to numbers */}
-                </div>
+                  <span className="text-lg font-bold mr-2">3</span>
+                </button>
 
-                <span className="text-lg font-bold">3</span>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">الفريق 2</span> {/* Changed team names to numbers */}
+                <button
+                  onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
+                  disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
+                  className={`py-3 px-4 rounded-xl text-white font-medium ${
+                    isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  } transition-colors flex items-center justify-center`}
+                >
                   {getQuestionStatusIcon(DifficultyLevel.HARD, 2)}
-                </div>
-              </button>
+                  <span className="text-lg font-bold mr-2">3</span>
+                </button>
+              </div>
             </div>
           </div>
 

@@ -109,63 +109,74 @@ export class DatabaseStorage implements IStorage {
 
   // TODO: Implement game operations
   // Game operations - stub implementations
-  async createGame(categoryCount: number, team1Name: string, team2Name: string): Promise<Game> {
-    const gameId = randomUUID();
-    
-    // Create teams
-    const [team1] = await db
-      .insert(teams)
-      .values({
-        name: team1Name,
-        score: 0,
-        gameId
-      })
-      .returning();
-    
-    const [team2] = await db
-      .insert(teams)
-      .values({
-        name: team2Name,
-        score: 0,
-        gameId
-      })
-      .returning();
-    
-    // Create game record
-    const [gameRecord] = await db
-      .insert(games)
-      .values({
-        id: gameId,
-        team1Id: team1.id,
-        team2Id: team2.id,
+  async createGame(categoryCount: number, team1Name: string, team2Name: string, answerTime: number = 30, gameName?: string): Promise<Game> {
+    try {
+      const gameId = randomUUID();
+      
+      // Create teams
+      const [team1] = await db
+        .insert(teams)
+        .values({
+          name: team1Name,
+          score: 0,
+          gameId
+        })
+        .returning();
+      
+      const [team2] = await db
+        .insert(teams)
+        .values({
+          name: team2Name,
+          score: 0,
+          gameId
+        })
+        .returning();
+      
+      // Create game record
+      const [gameRecord] = await db
+        .insert(games)
+        .values({
+          id: gameId,
+          team1Id: team1.id,
+          team2Id: team2.id,
+          currentTeamId: team1.id,
+          state: "setup",
+          categoryCount,
+          currentCategory: null,
+          currentDifficulty: null,
+          created: new Date().toISOString(),
+          answer_time: answerTime,
+          name: gameName
+        })
+        .returning();
+      
+      // استرجاع التصنيفات والأسئلة للعبة
+      const categories = await this.getCategoriesByGame(gameId);
+      
+      // تجهيز كائن اللعبة الكامل
+      return {
+        id: gameRecord.id,
+        team1: {
+          id: team1.id,
+          name: team1.name,
+          score: team1.score
+        },
+        team2: {
+          id: team2.id,
+          name: team2.name,
+          score: team2.score
+        },
         currentTeamId: team1.id,
-        state: "setup",
-        categoryCount,
-        currentCategory: null,
-        currentDifficulty: null,
-        created: new Date().toISOString()
-      })
-      .returning();
-    
-    // For now, we'll return a minimal Game object
-    // Later we'll implement category and question creation
-    return {
-      id: gameRecord.id,
-      team1: {
-        id: team1.id,
-        name: team1.name,
-        score: team1.score
-      },
-      team2: {
-        id: team2.id,
-        name: team2.name,
-        score: team2.score
-      },
-      currentTeamId: team1.id,
-      state: gameRecord.state,
-      categoryCount: gameRecord.categoryCount,
-      categories: []
-    };
+        state: gameRecord.state,
+        categoryCount: gameRecord.categoryCount,
+        categories: categories,
+        answerTime: answerTime,
+        ...(gameName && { name: gameName })
+      };
+    } catch (error) {
+      console.error('Error creating game:', error);
+      throw error;
+    }
   }
 
   async getGame(id: string): Promise<Game | undefined> {
@@ -339,21 +350,23 @@ export class DatabaseStorage implements IStorage {
 
   // Question operations
   async markQuestionAnswered(questionId: number): Promise<Question | undefined> {
-    // لأن الأسئلة افتراضية، سنقوم بتخزين حالتها في الذاكرة فقط
-    // عند تنفيذ قاعدة البيانات الحقيقية، ستكون هذه وظيفة حقيقية
-    // تحديث حالة السؤال في قاعدة البيانات
-
-    // نجد السؤال في الذاكرة ونعتبره تم الإجابة عليه
-    // هنا سنعيد نفس السؤال الافتراضي مع تغيير isAnswered إلى true
-    return {
-      id: questionId,
-      text: `سؤال تم الإجابة عليه ${questionId}`,
-      answer: `إجابة للسؤال ${questionId}`,
-      difficulty: DifficultyLevel.MEDIUM,
-      points: 20,
-      teamId: 1,
-      isAnswered: true
-    };
+    try {
+      // تحديث حالة السؤال في قاعدة البيانات
+      const [updatedQuestion] = await db
+        .update(questions)
+        .set({ isAnswered: true })
+        .where(eq(questions.id, questionId))
+        .returning();
+      
+      if (!updatedQuestion) {
+        return undefined;
+      }
+      
+      return updatedQuestion;
+    } catch (error) {
+      console.error('Error marking question as answered:', error);
+      throw error;
+    }
   }
 
   // لا نحتاج فعلياً لهذه الوظيفة حيث أننا نقوم بإنشاء الأسئلة تلقائياً

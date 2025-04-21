@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -43,6 +43,7 @@ export const teams = pgTable("teams", {
 // Games table
 export const games = pgTable("games", {
   id: text("id").primaryKey(),
+  name: text("name"), // اسم اللعبة
   team1Id: integer("team1_id").references(() => teams.id),
   team2Id: integer("team2_id").references(() => teams.id),
   currentTeamId: integer("current_team_id").references(() => teams.id),
@@ -51,6 +52,8 @@ export const games = pgTable("games", {
   currentCategory: text("current_category"),
   currentDifficulty: text("current_difficulty"),
   created: text("created").notNull(),
+  answerTime: integer("answer_time").default(30).notNull(), // وقت الإجابة بالثواني
+  userId: integer("user_id").references(() => users.id), // معرف المستخدم الذي أنشأ اللعبة
 });
 
 // Categories table
@@ -96,6 +99,18 @@ export const questions = pgTable("questions", {
   isAnswered: boolean("is_answered").notNull().default(false),
 });
 
+// Game Logs table to track game activity
+export const gameLogs = pgTable("game_logs", {
+  id: serial("id").primaryKey(),
+  gameId: text("game_id").notNull().references(() => games.id),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  action: text("action").notNull(), // نوع الإجراء: select_category, select_difficulty, answer_question, etc.
+  teamId: integer("team_id").references(() => teams.id), // معرف الفريق الذي قام بالإجراء
+  questionId: integer("question_id").references(() => questions.id), // معرف السؤال (اختياري)
+  categoryId: integer("category_id").references(() => categories.id), // معرف الفئة (اختياري)
+  details: json("details"), // تفاصيل إضافية عن الإجراء
+});
+
 // Type definition for category schema children
 type CategorySchemaType = {
   id: number;
@@ -137,6 +152,7 @@ export type CategoryUI = z.infer<typeof categorySchema>;
 // Game schema
 export const gameSchema = z.object({
   id: z.string(),
+  name: z.string().optional(),
   team1: z.object({
     id: z.number(),
     name: z.string(),
@@ -152,6 +168,7 @@ export const gameSchema = z.object({
   categoryCount: z.number(),
   currentCategory: z.string().optional(),
   currentDifficulty: z.string().optional(),
+  answerTime: z.number().default(30),
   categories: z.array(
     z.object({
       id: z.number(),
@@ -231,3 +248,22 @@ export type GameRecord = typeof games.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Question = typeof questions.$inferSelect;
 export type DbUser = typeof users.$inferSelect;
+export type GameLog = typeof gameLogs.$inferSelect;
+
+// Game log schema
+export const gameLogSchema = z.object({
+  id: z.number(),
+  gameId: z.string(),
+  timestamp: z.date().or(z.string()),
+  action: z.string(),
+  teamId: z.number().optional(),
+  questionId: z.number().optional(),
+  categoryId: z.number().optional(),
+  details: z.record(z.unknown()).optional(),
+});
+
+export type GameLogType = z.infer<typeof gameLogSchema>;
+
+// Insert schema for game logs
+export const insertGameLogSchema = createInsertSchema(gameLogs).omit({ id: true, timestamp: true });
+export type InsertGameLog = z.infer<typeof insertGameLogSchema>;

@@ -2,58 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
+
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-gradient-to-br from-white to-purple-50 dark:from-gray-950 dark:to-gray-900 min-h-screen text-foreground;
   }
 
   html {
     @apply text-right; /* for RTL Arabic text */
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-gray-900 dark:text-white;
   }
 }
 
 @layer components {
+  /* Gradients and backgrounds */
   .bg-primary-gradient {
-    @apply bg-gradient-to-r from-primary to-secondary;
+    @apply bg-gradient-to-r from-primary to-primary/80;
   }
 
+  .bg-primary-radial {
+    background: radial-gradient(circle at center, theme('colors.primary.DEFAULT'), theme('colors.primary.DEFAULT/70'));
+  }
+
+  .bg-glass {
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-md;
+  }
+
+  .bg-hero-pattern {
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='0.1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='0.1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23d5d1ff' fill-opacity='0.1'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.1'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Difficulty levels */
   .difficulty-easy {
-    @apply bg-green-500 text-white;
+    @apply bg-gradient-to-r from-green-500 to-green-600 text-white font-medium px-3 py-1 rounded-full shadow-md;
   }
 
   .difficulty-medium {
-    @apply bg-yellow-500 text-white;
+    @apply bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium px-3 py-1 rounded-full shadow-md;
   }
 
   .difficulty-hard {
-    @apply bg-red-500 text-white;
+    @apply bg-gradient-to-r from-red-500 to-red-600 text-white font-medium px-3 py-1 rounded-full shadow-md;
   }
 
+  /* Team styles */
   .team-one {
-    @apply bg-blue-600 text-white;
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg;
   }
 
   .team-two {
-    @apply bg-red-600 text-white;
+    @apply bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg;
   }
 
+  /* Card effects */
   .card-flip {
     @apply [transform:rotateY(180deg)];
   }
 
   .question-card {
-    @apply [perspective:1000px] [transform-style:preserve-3d] [transition:transform_0.6s];
+    @apply [perspective:1000px] [transform-style:preserve-3d] [transition:transform_0.6s] shadow-xl hover:shadow-2xl transition-shadow;
   }
 
   .card-front, .card-back {
-    @apply absolute w-full h-full [backface-visibility:hidden];
+    @apply absolute w-full h-full [backface-visibility:hidden] rounded-xl;
   }
 
   .card-back {
     @apply [transform:rotateY(180deg)];
+  }
+
+  /* Interactive elements */
+  .btn-hover-effect {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .btn-hover-effect::after {
+    content: "";
+    @apply absolute top-0 left-0 w-full h-full bg-white/20 transform scale-x-0 origin-right transition-transform duration-300;
+  }
+
+  .btn-hover-effect:hover::after {
+    @apply transform scale-x-100 origin-left;
+  }
+
+  /* Special UI elements */
+  .progress-bar {
+    @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+  }
+
+  .progress-value {
+    @apply h-full bg-primary transition-all duration-300 ease-in-out;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary/50 hover:bg-primary rounded-full;
   }
 }

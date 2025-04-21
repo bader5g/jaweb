@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="80" viewBox="0 0 240 80">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#4F46E5" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <g transform="translate(20, 40)" filter="url(#glow)">
+    <text font-family="Tajawal, Arial" font-size="48" font-weight="bold" fill="url(#logoGradient)" text-anchor="middle">
+      جاوب
+    </text>
+    <text font-family="Tajawal, Arial" font-size="16" font-weight="normal" fill="#6B7280" text-anchor="middle" y="20">
+      تحدي المعرفة
+    </text>
+    <path d="M-90,-5 L-80,10 L-70,-5 M-50,-5 L-50,10 M-40,-5 L-30,10 L-20,-5" stroke="url(#logoGradient)" stroke-width="3" fill="none" opacity="0.3" />
+    <path d="M70,-5 L80,10 L90,-5 M50,-5 L50,10 M40,-5 L30,10 L20,-5" stroke="url(#logoGradient)" stroke-width="3" fill="none" opacity="0.3" />
+  </g>
+</svg>

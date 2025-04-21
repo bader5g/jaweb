@@ -4,7 +4,7 @@ import { Category, Question } from "@/lib/types";
 import { motion } from 'framer-motion';
 import { 
   BookOpen, Atom, Globe, BookText, Trophy, Palette, 
-  Cpu, Film, Music, Utensils, Calculator
+  Cpu, Film, Music, Utensils, Calculator, FolderOpen, CheckCircle
 } from 'lucide-react';
 
 interface GameCategoryCardProps {
@@ -14,7 +14,7 @@ interface GameCategoryCardProps {
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory } = useGame();
   
-  // تحديد الأيقونة المناسبة
+  // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'BookOpen': return <BookOpen className="h-6 w-6" />;
@@ -30,6 +30,40 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
       case 'Calculator': return <Calculator className="h-6 w-6" />;
       default: return <BookOpen className="h-6 w-6" />;
     }
+  };
+
+  // تحديد الأيقونة بناءً على اسم الفئة
+  const getCategoryIcon = () => {
+    const name = category.name.toLowerCase();
+    if (name.includes('history') || name.includes('تاريخ')) return 'BookOpen';
+    if (name.includes('science') || name.includes('علوم')) return 'Atom';
+    if (name.includes('geography') || name.includes('جغرافيا')) return 'Globe';
+    if (name.includes('literature') || name.includes('أدب')) return 'BookText';
+    if (name.includes('sports') || name.includes('رياضة')) return 'Trophy';
+    if (name.includes('arts') || name.includes('فنون')) return 'Palette';
+    if (name.includes('technology') || name.includes('تكنولوجيا')) return 'Cpu';
+    if (name.includes('movies') || name.includes('أفلام')) return 'Film';
+    if (name.includes('music') || name.includes('موسيقى')) return 'Music';
+    if (name.includes('food') || name.includes('طعام')) return 'Utensils';
+    if (name.includes('math') || name.includes('رياضيات')) return 'Calculator';
+    return 'BookOpen';
+  };
+  
+  // تحديد لون الفئة بناءً على اسمها
+  const getCategoryColor = () => {
+    const name = category.name.toLowerCase();
+    if (name.includes('history') || name.includes('تاريخ')) return 'amber';
+    if (name.includes('science') || name.includes('علوم')) return 'blue';
+    if (name.includes('geography') || name.includes('جغرافيا')) return 'green';
+    if (name.includes('literature') || name.includes('أدب')) return 'purple';
+    if (name.includes('sports') || name.includes('رياضة')) return 'red';
+    if (name.includes('arts') || name.includes('فنون')) return 'pink';
+    if (name.includes('technology') || name.includes('تكنولوجيا')) return 'gray';
+    if (name.includes('movies') || name.includes('أفلام')) return 'yellow';
+    if (name.includes('music') || name.includes('موسيقى')) return 'indigo';
+    if (name.includes('food') || name.includes('طعام')) return 'emerald';
+    if (name.includes('math') || name.includes('رياضيات')) return 'cyan';
+    return 'violet';
   };
   
   // حساب عدد الأسئلة المتبقية
@@ -49,52 +83,82 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   // تحديد إذا كانت الفئة مكتملة
   const isCompleted = remaining.total === 0;
   
-  // تحديد لون الفئة بناءً على حالة الاكتمال
-  const getCardColor = () => {
-    if (isCompleted) return 'bg-gray-500/10 border-gray-400/40';
-    return 'bg-primary/10 border-primary/40';
-  };
-  
+  // معالجة النقر على البطاقة
   const handleClick = () => {
     if (!isCompleted && selectCategory) {
       selectCategory(category.name);
     }
   };
+
+  // الحصول على نسبة الأسئلة المجابة
+  const completionPercentage = Math.round(
+    ((6 - remaining.total) / 6) * 100
+  );
+  
+  const color = getCategoryColor();
+  const iconName = getCategoryIcon();
   
   return (
     <motion.div
-      className={`p-4 border ${getCardColor()} rounded-lg shadow-md cursor-pointer
-        ${isCompleted ? 'opacity-60' : 'hover:shadow-lg hover:border-primary'}
-      `}
+      className={`category-card ${isCompleted ? 'opacity-75' : ''}`}
+      whileHover={{ y: -5, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.98 }}
       onClick={handleClick}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xl font-bold">{category.name}</h3>
-        <div className="p-2 rounded-full bg-primary/20">
-          {getIcon('BookOpen')}
+      <div className={`p-6 h-full rounded-2xl relative overflow-hidden ${isCompleted ? 'bg-gray-100' : 'bg-white'}`}>
+        {/* خلفية مموجة للبطاقة */}
+        <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-${color}-100 opacity-50`}></div>
+        <div className={`absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-${color}-50 opacity-50`}></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className={`text-2xl font-bold text-gray-800 ${isCompleted ? '' : `text-${color}-700`}`}>
+              {category.name}
+            </h3>
+            
+            <div className={`p-3 rounded-xl ${isCompleted ? 'bg-gray-200' : `bg-${color}-100`}`}>
+              {isCompleted ? 
+                <CheckCircle className="h-7 w-7 text-gray-500" /> : 
+                getIcon(iconName)
+              }
+            </div>
+          </div>
+          
+          <div className="mb-4">
+            <div className="flex justify-between mb-1">
+              <span className="text-sm font-medium text-gray-600">إكتمال الفئة</span>
+              <span className="text-sm font-medium text-gray-800">{completionPercentage}%</span>
+            </div>
+            <div className="progress-bar">
+              <div className={`progress-value ${isCompleted ? 'bg-gray-400' : `bg-${color}-500`}`} style={{ width: `${completionPercentage}%` }}></div>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-blue-600 mr-2"></div>
+                <span className="text-sm text-gray-600">
+                  {game?.team1.name}: <span className="font-bold">{remaining.team1}</span>
+                </span>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-red-600 mr-2"></div>
+                <span className="text-sm text-gray-600">
+                  {game?.team2.name}: <span className="font-bold">{remaining.team2}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          {isCompleted && (
+            <div className="absolute top-4 left-4 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs font-medium">
+              تم الإكمال
+            </div>
+          )}
         </div>
       </div>
-      
-      <div className="mb-4">
-        <p className="text-lg">الأسئلة المتبقية: <strong>{remaining.total}</strong></p>
-      </div>
-      
-      <div className="flex justify-between items-center">
-        <div className="text-blue-600">
-          <p>الفريق الأول: {remaining.team1}</p>
-        </div>
-        <div className="text-red-600">
-          <p>الفريق الثاني: {remaining.team2}</p>
-        </div>
-      </div>
-      
-      {/* مؤشر حالة الإكمال */}
-      {isCompleted && (
-        <div className="mt-3 py-1 px-2 bg-gray-200 text-gray-600 rounded text-center">
-          تم إكمال الفئة
-        </div>
-      )}
     </motion.div>
   );
 }

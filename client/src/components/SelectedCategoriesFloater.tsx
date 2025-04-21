@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Timer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Timer, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { CategoryUI } from '@shared/schema';
@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { useGame } from '@/lib/gameContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface SelectedCategoriesFloaterProps {
   selectedCategories: number[];
@@ -24,7 +26,11 @@ const SelectedCategoriesFloater = ({
   const [gameName, setGameName] = useState("");
   const [team1Name, setTeam1Name] = useState("الفريق الأزرق");
   const [team2Name, setTeam2Name] = useState("الفريق الأحمر");
-  const [answerTime, setAnswerTime] = useState("30");
+  const [answerTime, setAnswerTime] = useState("60");
+  const [isStarting, setIsStarting] = useState(false);
+  
+  const { createGame, startGame, loading } = useGame();
+  const { toast } = useToast();
   
   // احضار بيانات التصنيفات
   const { data: categories } = useQuery<CategoryUI[]>({
@@ -37,16 +43,47 @@ const SelectedCategoriesFloater = ({
   ) || [];
   
   // معالجة بدء اللعبة
-  const handleStartGame = () => {
-    console.log({
-      gameName,
-      team1Name,
-      team2Name,
-      answerTime,
-      selectedCategories
-    });
-    setShowGameDialog(false);
-    window.location.href = "/setup";
+  const handleStartGame = async () => {
+    try {
+      setIsStarting(true);
+      console.log({
+        gameName,
+        team1Name,
+        team2Name,
+        answerTime: parseInt(answerTime),
+        selectedCategories
+      });
+      
+      // إنشاء اللعبة باستخدام API مباشرة
+      const game = await createGame(
+        selectedCategories.length, 
+        team1Name, 
+        team2Name, 
+        parseInt(answerTime),
+        gameName || undefined
+      );
+      
+      if (game) {
+        // بدء اللعبة
+        await startGame();
+        setShowGameDialog(false);
+      } else {
+        toast({
+          title: "حدث خطأ",
+          description: "فشل في إنشاء اللعبة، يرجى المحاولة مرة أخرى",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error starting game:", error);
+      toast({
+        title: "حدث خطأ",
+        description: "فشل في إنشاء اللعبة، يرجى المحاولة مرة أخرى",
+        variant: "destructive"
+      });
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   // عند عدم وجود فئات مختارة، نخفي العنصر
@@ -207,9 +244,16 @@ const SelectedCategoriesFloater = ({
               type="submit" 
               onClick={handleStartGame}
               className="bg-primary w-full md:w-auto"
-              disabled={!team1Name || !team2Name}
+              disabled={!team1Name || !team2Name || isStarting || loading}
             >
-              بدء اللعبة
+              {isStarting || loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  جاري التحميل...
+                </>
+              ) : (
+                "بدء اللعبة"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

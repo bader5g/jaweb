@@ -44,4 +44,6 @@ export interface Game {
   currentCategory?: string;
   currentDifficulty?: string;
   categories: Category[];
+  answerTime: number; // وقت الإجابة بالثواني
+  name?: string; // اسم اللعبة (اختياري)
 }

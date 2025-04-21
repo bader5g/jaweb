@@ -40,87 +40,80 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let reconnectTimer: NodeJS.Timeout | null = null;
     
     const connectWebSocket = () => {
-      if (game?.id && !socket) {
-        try {
-          // تحديد بروتوكول الاتصال بناء على الموقع
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const wsUrl = `${protocol}//${window.location.host}/ws`;
-          console.log('Connecting to WebSocket at:', wsUrl);
+      try {
+        // تحديد بروتوكول الاتصال بناء على الموقع
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        console.log('Connecting to WebSocket at:', wsUrl);
+        
+        const ws = new WebSocket(wsUrl);
+        
+        // معالجة فتح الاتصال
+        ws.onopen = () => {
+          console.log('WebSocket connection established');
+          reconnectAttempts = 0; // إعادة تعيين محاولات الاتصال عند النجاح
           
-          const ws = new WebSocket(wsUrl);
-          
-          // معالجة فتح الاتصال
-          ws.onopen = () => {
-            console.log('WebSocket connection established');
-            reconnectAttempts = 0; // إعادة تعيين محاولات الاتصال عند النجاح
-            
-            // إرسال طلب الانضمام إلى اللعبة
+          // إذا كانت هناك لعبة مُعرّفة، أرسل طلب الانضمام
+          if (game?.id) {
             ws.send(JSON.stringify({ type: 'join', gameId: game.id }));
+          }
+        };
+        
+        // معالجة الرسائل الواردة
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'game_state') {
+              setGame(data.game);
+            }
+          } catch (err) {
+            console.error('Error parsing WebSocket message:', err);
+          }
+        };
+        
+        // معالجة أخطاء الاتصال
+        ws.onerror = (err) => {
+          console.error('WebSocket error:', err);
+        };
+        
+        // معالجة إغلاق الاتصال
+        ws.onclose = (event) => {
+          console.log('WebSocket connection closed:', event.code, event.reason);
+          setSocket(null);
+          
+          // محاولة إعادة الاتصال إذا كانت هناك محاولات متبقية
+          if (reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            const delay = 2000; // ثابت 2 ثانية
+            console.log(`Attempting to reconnect in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})...`);
             
-            // تأكيد الاتصال عندما ينجح
+            reconnectTimer = setTimeout(() => {
+              connectWebSocket();
+            }, delay);
+          } else {
             toast({
-              title: "تم الاتصال",
-              description: "تم الاتصال بالخادم بنجاح",
-              variant: "default"
+              title: "فشل الاتصال",
+              description: "تعذر الاتصال بالخادم بعد عدة محاولات",
+              variant: "destructive"
             });
-          };
-          
-          // معالجة الرسائل الواردة
-          ws.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              if (data.type === 'game_state') {
-                setGame(data.game);
-              }
-            } catch (err) {
-              console.error('Error parsing WebSocket message:', err);
-            }
-          };
-          
-          // معالجة أخطاء الاتصال
-          ws.onerror = (err) => {
-            console.error('WebSocket error:', err);
-          };
-          
-          // معالجة إغلاق الاتصال
-          ws.onclose = (event) => {
-            console.log('WebSocket connection closed:', event.code, event.reason);
-            setSocket(null);
-            
-            // محاولة إعادة الاتصال إذا كانت هناك محاولات متبقية
-            if (reconnectAttempts < maxReconnectAttempts) {
-              reconnectAttempts++;
-              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-              console.log(`Attempting to reconnect in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})...`);
-              
-              reconnectTimer = setTimeout(() => {
-                connectWebSocket();
-              }, delay);
-            } else {
-              toast({
-                title: "فشل الاتصال",
-                description: "تعذر الاتصال بالخادم بعد عدة محاولات",
-                variant: "destructive"
-              });
-              // قم بتوجيه المستخدم إلى الصفحة الرئيسية إذا فشل الاتصال بشكل كامل
-              navigate('/');
-            }
-          };
-          
-          setSocket(ws);
-        } catch (error) {
-          console.error('Failed to establish WebSocket connection:', error);
-          toast({
-            title: "خطأ في الاتصال",
-            description: "تعذر الاتصال بالخادم",
-            variant: "destructive"
-          });
-        }
+          }
+        };
+        
+        setSocket(ws);
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+        toast({
+          title: "خطأ في الاتصال",
+          description: "تعذر الاتصال بالخادم",
+          variant: "destructive"
+        });
       }
     };
     
-    // بدء الاتصال
-    connectWebSocket();
+    // إنشاء الاتصال فقط إذا لم يكن موجوداً بالفعل
+    if (!socket) {
+      connectWebSocket();
+    }
     
     // تنظيف عند تفكيك المكون
     return () => {
@@ -131,10 +124,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (socket) {
         console.log('Closing WebSocket connection');
         socket.close();
-        setSocket(null);
       }
     };
-  }, [game?.id, toast, socket, navigate]);
+  }, [toast, navigate]);
 
   const createGame = async (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string): Promise<Game | null> => {
     setLoading(true);

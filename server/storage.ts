@@ -150,8 +150,21 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      // استرجاع التصنيفات والأسئلة للعبة
-      const categories = await this.getCategoriesByGame(gameId);
+      // إذا تم تحديد فئات محددة، قم بإضافة معرف اللعبة إليها
+      if (selectedCategoryIds && selectedCategoryIds.length > 0) {
+        console.log(`Linking ${selectedCategoryIds.length} categories to game ${gameId}`);
+        
+        // تحديث كل فئة مختارة بإضافة معرف اللعبة إليها
+        for (const categoryId of selectedCategoryIds) {
+          await db
+            .update(categories)
+            .set({ gameId })
+            .where(eq(categories.id, categoryId));
+        }
+      }
+      
+      // استرجاع التصنيفات والأسئلة للعبة بعد تحديثها
+      const gameCategories = await this.getCategoriesByGame(gameId);
       
       // تجهيز كائن اللعبة الكامل
       return {
@@ -169,7 +182,7 @@ export class DatabaseStorage implements IStorage {
         currentTeamId: team1.id,
         state: gameRecord.state,
         categoryCount: gameRecord.categoryCount,
-        categories: categories,
+        categories: gameCategories,
         answerTime: answerTime,
         ...(gameName && { name: gameName })
       };
@@ -408,7 +421,13 @@ export class DatabaseStorage implements IStorage {
       // أولاً نجلب كل التصنيفات النشطة
       const allCategories = await this.getAllCategories();
       
-      // ثم نجلب التصنيفات المرتبطة باللعبة إذا وجدت أو نستخدم أول 8 تصنيفات
+      // نبحث عن اللعبة لمعرفة عدد الفئات المطلوبة
+      const [gameInfo] = await db.select().from(games).where(eq(games.id, gameId));
+      const categoryCount = gameInfo?.categoryCount || 8;
+      
+      console.log(`Fetching ${categoryCount} categories for game ${gameId}`);
+      
+      // ثم نجلب التصنيفات المرتبطة باللعبة إذا وجدت أو نستخدم أول عدد محدد من التصنيفات
       let gameCategories: any[];
       
       // نبحث عن التصنيفات التي تم ربطها باللعبة بالفعل
@@ -417,11 +436,23 @@ export class DatabaseStorage implements IStorage {
         .from(categories)
         .where(eq(categories.gameId, gameId));
       
+      console.log(`Found ${linkedCategories.length} linked categories for game ${gameId}`);
+      
       if (linkedCategories.length > 0) {
         gameCategories = linkedCategories;
       } else {
-        // إذا لم تكن هناك تصنيفات مرتبطة، نأخذ أول 8 تصنيفات
-        gameCategories = allCategories.slice(0, 8);
+        // إذا لم تكن هناك تصنيفات مرتبطة، نأخذ أول عدد محدد من التصنيفات
+        gameCategories = allCategories.slice(0, categoryCount);
+        
+        // حفظ هذه الفئات مع رقم معرف اللعبة
+        for (const category of gameCategories) {
+          await db
+            .update(categories)
+            .set({ gameId: gameId })
+            .where(eq(categories.id, category.id));
+        }
+        
+        console.log(`Assigned ${categoryCount} categories to game ${gameId}`);
       }
       
       // نبحث عن أسئلة موجودة بالفعل لهذه اللعبة

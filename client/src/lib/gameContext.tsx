@@ -8,7 +8,7 @@ interface GameContextType {
   game: Game | null;
   loading: boolean;
   error: string | null;
-  createGame: (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string) => Promise<Game | null>;
+  createGame: (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string, selectedCategories?: number[]) => Promise<Game | null>;
   joinGame: (gameId: string) => void;
   startGame: () => Promise<void>;
   selectCategory: (categoryName: string) => Promise<void>;

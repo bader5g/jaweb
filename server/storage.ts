@@ -369,9 +369,26 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // لا نحتاج فعلياً لهذه الوظيفة حيث أننا نقوم بإنشاء الأسئلة تلقائياً
+  // جلب الأسئلة لفئة محددة
   async getQuestionsByCategory(categoryId: number): Promise<Question[]> {
-    return this.generateQuestionsForCategory(categoryId, "temp");
+    try {
+      // البحث عن الأسئلة الموجودة لهذه الفئة
+      const categoryQuestions = await db
+        .select()
+        .from(questions)
+        .where(eq(questions.categoryId, categoryId));
+      
+      if (categoryQuestions.length > 0) {
+        return categoryQuestions;
+      }
+      
+      // إذا لم تكن هناك أسئلة، نقوم بإنشاء أسئلة افتراضية
+      // ملاحظة: عادة لا نقوم بإنشائها هنا ولكن من خلال وظيفة getCategoriesByGame
+      return [];
+    } catch (error) {
+      console.error('Error fetching questions by category:', error);
+      throw error;
+    }
   }
 
   // Category operations

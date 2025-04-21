@@ -20,8 +20,8 @@ function Router() {
       <div className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/setup" component={GameSetup} />
-          <Route path="/play" component={GamePlay} />
+          <ProtectedRoute path="/setup" component={GameSetup} />
+          <ProtectedRoute path="/play" component={GamePlay} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>

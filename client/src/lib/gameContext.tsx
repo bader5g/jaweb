@@ -8,12 +8,13 @@ interface GameContextType {
   game: Game | null;
   loading: boolean;
   error: string | null;
-  createGame: (categoryCount: number, team1Name: string, team2Name: string) => Promise<Game | null>;
+  createGame: (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string) => Promise<Game | null>;
   joinGame: (gameId: string) => void;
   startGame: () => Promise<void>;
   selectCategory: (categoryName: string) => Promise<void>;
   selectDifficulty: (difficulty: string) => Promise<void>;
   answerQuestion: (questionId: number, isCorrect: boolean) => Promise<void>;
+  updateTeamScore: (teamId: number, changeAmount: number) => Promise<void>;
   endGame: () => Promise<void>;
   startNewGame: () => void;
   getCurrentQuestion: () => Question | null;
@@ -88,7 +89,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }, [game?.id, toast]);
 
-  const createGame = async (categoryCount: number, team1Name: string, team2Name: string): Promise<Game | null> => {
+  const createGame = async (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string): Promise<Game | null> => {
     setLoading(true);
     setError(null);
     
@@ -96,7 +97,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest('POST', '/api/games', {
         categoryCount,
         team1Name,
-        team2Name
+        team2Name,
+        answerTime,
+        name: gameName
       });
       
       const newGame = await res.json();
@@ -191,6 +194,56 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateTeamScore = async (teamId: number, changeAmount: number) => {
+    if (!game) return;
+    
+    try {
+      // تحديد الفريق
+      const team = teamId === game.team1.id ? game.team1 : game.team2;
+      
+      // حساب النقاط الجديدة
+      const newScore = team.score + changeAmount;
+      
+      // لا نسمح بالنقاط السلبية
+      const finalScore = Math.max(0, newScore);
+      
+      // استدعاء API لتحديث النقاط
+      await apiRequest('PUT', `/api/teams/${teamId}/score`, { 
+        points: finalScore, 
+        gameId: game.id,
+        direct: true // علامة تشير إلى أن هذا تحديث مباشر للنقاط
+      });
+      
+      // تحديث الحالة المحلية (سيتم استبدالها بالتحديث من الخادم لاحقًا)
+      if (game.team1.id === teamId) {
+        setGame({
+          ...game,
+          team1: {
+            ...game.team1,
+            score: finalScore
+          }
+        });
+      } else {
+        setGame({
+          ...game,
+          team2: {
+            ...game.team2,
+            score: finalScore
+          }
+        });
+      }
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء تحديث النقاط';
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+  
   const answerQuestion = async (questionId: number, isCorrect: boolean) => {
     if (!game) return;
     
@@ -301,6 +354,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         selectCategory,
         selectDifficulty,
         answerQuestion,
+        updateTeamScore,
         endGame,
         startNewGame,
         getCurrentQuestion,

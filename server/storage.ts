@@ -531,32 +531,20 @@ export class DatabaseStorage implements IStorage {
     const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
     const points = { [DifficultyLevel.EASY]: 10, [DifficultyLevel.MEDIUM]: 20, [DifficultyLevel.HARD]: 30 };
 
-    // Generate 2 questions for each difficulty level, 1 for each team
-    difficulties.forEach(difficulty => {
-      // Question for team 1
-      questions.push({
-        id: questions.length + 1,
-        text: `سؤال ${difficulty} (${questions.length + 1}) للفريق 1`,
-        answer: `إجابة السؤال ${questions.length + 1}`,
-        difficulty,
-        points: points[difficulty],
-        categoryId,
-        gameId,
-        teamId: 1,
-        isAnswered: false
-      });
-
-      // Question for team 2
-      questions.push({
-        id: questions.length + 1,
-        text: `سؤال ${difficulty} (${questions.length + 1}) للفريق 2`, 
-        answer: `إجابة السؤال ${questions.length + 1}`,
-        difficulty,
-        points: points[difficulty],
-        categoryId,
-        gameId,
-        teamId: 2,
-        isAnswered: false
+    // توزيع الأسئلة بالتساوي بين الفريقين - 3 أسئلة لكل فريق
+    [1, 2].forEach(teamId => {
+      difficulties.forEach(difficulty => {
+        questions.push({
+          id: questions.length + 1,
+          text: `سؤال ${difficulty} (${questions.length + 1}) للفريق ${teamId}`,
+          answer: `إجابة السؤال ${questions.length + 1}`,
+          difficulty,
+          points: points[difficulty],
+          categoryId,
+          gameId,
+          teamId,
+          isAnswered: false
+        });
       });
     });
 

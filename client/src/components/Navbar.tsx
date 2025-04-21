@@ -1,27 +1,70 @@
 import { Button } from "./ui/button";
 import { Link } from "wouter";
 import { useState } from "react";
+import { useAuth } from "../hooks/use-auth";
+import { Loader2 } from "lucide-react";
+import { UserLevel } from "@shared/schema";
 
-// سنقوم بتنفيذ مكون المستخدم المسجل لاحقاً عندما نضيف نظام المصادقة
+// مكون عرض معلومات المستخدم المسجل
 const UserProfile = () => {
-  const isLoggedIn = false; // هذا سيتغير عندما نضيف المصادقة
+  const { user, isLoading, logoutMutation } = useAuth();
 
-  if (isLoggedIn) {
+  // إذا كانت حالة المصادقة قيد التحميل
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span className="text-sm">جاري التحميل...</span>
+      </div>
+    );
+  }
+
+  // إذا كان المستخدم مسجل الدخول
+  if (user) {
+    // وظيفة لتحويل مستوى المستخدم إلى اللغة العربية
+    const getLevelInArabic = (level: string) => {
+      switch (level) {
+        case UserLevel.BRONZE:
+          return "برونزي";
+        case UserLevel.SILVER:
+          return "فضي";
+        case UserLevel.GOLD:
+          return "ذهبي";
+        case UserLevel.PLATINUM:
+          return "بلاتيني";
+        default:
+          return "برونزي";
+      }
+    };
+
     return (
       <div className="flex items-center gap-2">
         <div className="text-sm">
-          <div>
-            <span className="font-bold">100</span> نقطة
+          <div className="font-medium">
+            {user.username}
           </div>
-          <div>المستوى: برونزي</div>
+          <div>
+            <span className="font-bold">{user.points}</span> نقطة
+          </div>
+          <div>المستوى: {getLevelInArabic(user.level)}</div>
         </div>
-        <Button variant="outline" size="sm">
-          تسجيل الخروج
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
+        >
+          {logoutMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "تسجيل الخروج"
+          )}
         </Button>
       </div>
     );
   }
 
+  // إذا كان المستخدم غير مسجل الدخول
   return (
     <div className="flex items-center gap-2">
       <Link href="/auth">

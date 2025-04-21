@@ -76,8 +76,9 @@ export default function AuthPage() {
 
   // معالجة التسجيل
   const onRegisterSubmit = (values: RegisterFormValues) => {
+    // نحذف حقل confirmPassword لأنه غير مطلوب في واجهة API
     const { confirmPassword, ...userData } = values;
-    registerMutation.mutate(userData);
+    registerMutation.mutate(userData as any); // استخدام any لتجاوز مشكلة TypeScript
   };
   
   // عرض مؤشر التحميل أثناء التحقق من حالة المصادقة
@@ -241,9 +242,13 @@ export default function AuthPage() {
                     <Button 
                       type="submit" 
                       className="w-full"
-                      disabled={registerForm.formState.isSubmitting}
+                      disabled={registerMutation.isPending || registerForm.formState.isSubmitting}
                     >
-                      {registerForm.formState.isSubmitting ? "جاري التحميل..." : "التسجيل"}
+                      {registerMutation.isPending || registerForm.formState.isSubmitting ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> جاري التحميل...</>
+                      ) : (
+                        "التسجيل"
+                      )}
                     </Button>
                   </CardFooter>
                 </form>

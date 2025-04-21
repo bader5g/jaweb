@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import GameSetup from "./pages/GameSetup";
 import GamePlay from "./pages/GamePlay";
 import { GameProvider } from "./lib/gameContext";
+import { AuthProvider } from "./hooks/use-auth";
+import { ProtectedRoute } from "./lib/protected-route";
 import AuthPage from "./pages/AuthPage";
 import Navbar from "./components/Navbar";
 
@@ -32,10 +34,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <GameProvider>
-          <Toaster />
-          <Router />
-        </GameProvider>
+        <AuthProvider>
+          <GameProvider>
+            <Toaster />
+            <Router />
+          </GameProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

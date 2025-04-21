@@ -31,6 +31,8 @@ const categoryFormSchema = z.object({
   difficultyLevel: z.string().default(DifficultyLevel.MEDIUM),
   isActive: z.boolean().default(true),
   imageUrl: z.string().optional(),
+  parentId: z.number().nullable().optional(),
+  order: z.number().optional().default(0),
 });
 
 export default function AdminCategories() {
@@ -62,6 +64,8 @@ export default function AdminCategories() {
       difficultyLevel: DifficultyLevel.MEDIUM,
       isActive: true,
       imageUrl: '',
+      parentId: null,
+      order: 0,
     },
   });
 
@@ -78,6 +82,8 @@ export default function AdminCategories() {
       difficultyLevel: DifficultyLevel.MEDIUM,
       isActive: true,
       imageUrl: '',
+      parentId: null,
+      order: 0,
     },
   });
 
@@ -217,6 +223,8 @@ export default function AdminCategories() {
       difficultyLevel: category.difficultyLevel,
       isActive: category.isActive,
       imageUrl: category.imageUrl || '',
+      parentId: category.parentId || null,
+      order: category.order || 0,
     });
     setIsEditDialogOpen(true);
   };
@@ -298,7 +306,7 @@ export default function AdminCategories() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => navigate('/')}
+            onClick={() => setLocation('/')}
             className="mr-2"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -320,11 +328,150 @@ export default function AdminCategories() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredCategories?.map(category => (
-          <CategoryCard key={category.id} category={category} />
-        ))}
-      </div>
+      {/* عرض طابي للتصنيفات: طريقة العرض الشبكية وطريقة العرض الهرمية */}
+      <Tabs defaultValue="grid" className="mb-6">
+        <TabsList>
+          <TabsTrigger value="grid">عرض شبكي</TabsTrigger>
+          <TabsTrigger value="hierarchy">عرض هرمي</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredCategories?.map(category => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="hierarchy">
+          <div className="space-y-4">
+            {/* عرض التصنيفات الرئيسية (بدون أب) */}
+            {filteredCategories
+              ?.filter(category => !category.parentId)
+              .map(parentCategory => (
+                <div key={parentCategory.id} className="border rounded-lg overflow-hidden">
+                  <div 
+                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    onClick={() => handleEditCategory(parentCategory)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${parentCategory.color ? `bg-${parentCategory.color}` : 'bg-blue-500'} text-white`}>
+                        {parentCategory.imageUrl ? (
+                          <div className="h-full w-full rounded-full overflow-hidden">
+                            <img 
+                              src={parentCategory.imageUrl} 
+                              alt={parentCategory.nameAr} 
+                              className="h-full w-full object-cover" 
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-xl font-bold">{parentCategory.nameAr.charAt(0)}</div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg">{parentCategory.nameAr}</h3>
+                        <p className="text-sm text-gray-500">{parentCategory.name}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditCategory(parentCategory);
+                      }}>
+                        <PenSquare className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-red-500" onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCategory(parentCategory);
+                      }}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* التصنيفات الفرعية */}
+                  <div className="border-t">
+                    {filteredCategories
+                      ?.filter(category => category.parentId === parentCategory.id)
+                      .map(childCategory => (
+                        <div 
+                          key={childCategory.id} 
+                          className="pr-10 pl-4 py-3 border-b last:border-b-0 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleEditCategory(childCategory)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`h-7 w-7 rounded-full flex items-center justify-center ${childCategory.color ? `bg-${childCategory.color}` : 'bg-blue-500'} text-white text-xs`}>
+                              {childCategory.imageUrl ? (
+                                <div className="h-full w-full rounded-full overflow-hidden">
+                                  <img 
+                                    src={childCategory.imageUrl} 
+                                    alt={childCategory.nameAr} 
+                                    className="h-full w-full object-cover" 
+                                  />
+                                </div>
+                              ) : (
+                                <div className="text-xs font-bold">{childCategory.nameAr.charAt(0)}</div>
+                              )}
+                            </div>
+                            <span className="font-medium">{childCategory.nameAr}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCategory(childCategory);
+                            }}>
+                              <PenSquare className="h-3 w-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-red-500" onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCategory(childCategory);
+                            }}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    
+                    {/* زر إضافة تصنيف فرعي */}
+                    <div className="pr-10 pl-4 py-3 flex justify-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-primary w-full justify-center"
+                        onClick={() => {
+                          createForm.reset({
+                            ...createForm.getValues(),
+                            parentId: parentCategory.id
+                          });
+                          setIsCreateDialogOpen(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        إضافة تصنيف فرعي
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+            {/* إضافة تصنيف رئيسي جديد */}
+            <Button 
+              variant="outline" 
+              className="w-full justify-center py-6"
+              onClick={() => {
+                createForm.reset({
+                  ...createForm.getValues(),
+                  parentId: null
+                });
+                setIsCreateDialogOpen(true);
+              }}
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              إضافة تصنيف رئيسي جديد
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {!filteredCategories?.length && (
         <div className="text-center py-12">
@@ -486,6 +633,61 @@ export default function AdminCategories() {
                       </FormControl>
                       <FormDescription>
                         أدخل رابط لصورة التصنيف (سيتم استخدامه بدلًا من الأيقونة)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createForm.control}
+                  name="parentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>التصنيف الأب (اختياري)</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value ? parseInt(value) : null)} 
+                        value={field.value?.toString() || ''}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="اختر التصنيف الأب" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">بدون تصنيف أب (تصنيف رئيسي)</SelectItem>
+                          {categories?.filter(c => c.id !== selectedCategory?.id).map(category => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.nameAr}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        اختر التصنيف الأب الذي ينتمي إليه هذا التصنيف
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createForm.control}
+                  name="order"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>الترتيب</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          value={field.value?.toString() || '0'}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        رقم يحدد ترتيب ظهور التصنيف في القائمة (اختياري)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -688,6 +890,61 @@ export default function AdminCategories() {
                       </FormControl>
                       <FormDescription>
                         أدخل رابط لصورة التصنيف (سيتم استخدامه بدلًا من الأيقونة)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="parentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>التصنيف الأب (اختياري)</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value ? parseInt(value) : null)} 
+                        value={field.value?.toString() || ''}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="اختر التصنيف الأب" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">بدون تصنيف أب (تصنيف رئيسي)</SelectItem>
+                          {categories?.filter(c => c.id !== selectedCategory?.id).map(category => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.nameAr}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        اختر التصنيف الأب الذي ينتمي إليه هذا التصنيف
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="order"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>الترتيب</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          value={field.value?.toString() || '0'}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        رقم يحدد ترتيب ظهور التصنيف في القائمة (اختياري)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

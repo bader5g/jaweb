@@ -408,17 +408,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                   <span className="text-lg font-bold mr-2">3</span>
                 </button>
               </div>
-              
-              {/* عرض دور الفريق الحالي - في الأسفل */}
-              <div className="p-3 bg-primary-50 rounded-xl mt-4 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <ChevronDown className="h-5 w-5 text-primary animate-bounce" />
-                  <p className="font-bold text-gray-800">
-                    دور الفريق: <span className="text-primary">{currentTeamName}</span>
-                  </p>
-                  <ChevronDown className="h-5 w-5 text-primary animate-bounce" />
-                </div>
-              </div>
             </div>
           </div>
 

@@ -91,8 +91,11 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
       }
     };
     
+    // ملاحظة: في قاعدة البيانات، الأسئلة تم تخزينها بمعرفات 1 و 2 للفرق
+    // ولكن معرفات الفرق الفعلية قد تكون مختلفة، لذلك نستخدم المؤشر (الأول أو الثاني)
     category.questions.forEach(q => {
-      const team = q.teamId === game?.team1.id ? 'team1' : 'team2';
+      // جميع الأسئلة ذات teamId=1 تخص الفريق الأول، وجميع الأسئلة ذات teamId=2 تخص الفريق الثاني
+      const team = q.teamId === 1 ? 'team1' : 'team2';
       if (q.difficulty === DifficultyLevel.EASY) {
         result.easy[team].push(q);
       } else if (q.difficulty === DifficultyLevel.MEDIUM) {
@@ -134,8 +137,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   
   // حساب عدد الأسئلة المتبقية
   const remainingQuestions = () => {
-    const team1Questions = category.questions.filter(q => q.teamId === game?.team1.id && !q.isAnswered);
-    const team2Questions = category.questions.filter(q => q.teamId === game?.team2.id && !q.isAnswered);
+    // استخدام القيم الثابتة 1 و 2 للفرق بدلاً من معرفات الفرق الحالية
+    const team1Questions = category.questions.filter(q => q.teamId === 1 && !q.isAnswered);
+    const team2Questions = category.questions.filter(q => q.teamId === 2 && !q.isAnswered);
     
     return {
       team1: team1Questions.length,
@@ -220,8 +224,10 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   };
   
   // الحصول على أيقونة حالة السؤال
-  const getQuestionStatusIcon = (difficulty: string, teamId: number) => {
-    const teamKey = teamId === game?.team1.id ? 'team1' : 'team2';
+  const getQuestionStatusIcon = (difficulty: string, teamIndex: number) => {
+    // استخدام رقم تسلسلي للفريق بدلاً من معرف الفريق
+    // teamIndex = 1 للفريق الأول و teamIndex = 2 للفريق الثاني
+    const teamKey = teamIndex === 1 ? 'team1' : 'team2';
     let questions;
     
     if (difficulty === DifficultyLevel.EASY) {
@@ -346,7 +352,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     } transition-colors flex justify-between items-center`}
                   >
                     <div className="flex items-center gap-2">
-                      {getQuestionStatusIcon(DifficultyLevel.EASY, game?.team1.id || 0)}
+                      {getQuestionStatusIcon(DifficultyLevel.EASY, 1)}
                       <span className="text-xs">{game?.team1.name}</span>
                     </div>
                     
@@ -354,7 +360,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{game?.team2.name}</span>
-                      {getQuestionStatusIcon(DifficultyLevel.EASY, game?.team2.id || 0)}
+                      {getQuestionStatusIcon(DifficultyLevel.EASY, 2)}
                     </div>
                   </button>
                   
@@ -369,7 +375,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     } transition-colors flex justify-between items-center`}
                   >
                     <div className="flex items-center gap-2">
-                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, game?.team1.id || 0)}
+                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 1)}
                       <span className="text-xs">{game?.team1.name}</span>
                     </div>
                     
@@ -377,7 +383,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{game?.team2.name}</span>
-                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, game?.team2.id || 0)}
+                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 2)}
                     </div>
                   </button>
                   
@@ -392,7 +398,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     } transition-colors flex justify-between items-center`}
                   >
                     <div className="flex items-center gap-2">
-                      {getQuestionStatusIcon(DifficultyLevel.HARD, game?.team1.id || 0)}
+                      {getQuestionStatusIcon(DifficultyLevel.HARD, 1)}
                       <span className="text-xs">{game?.team1.name}</span>
                     </div>
                     
@@ -400,7 +406,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{game?.team2.name}</span>
-                      {getQuestionStatusIcon(DifficultyLevel.HARD, game?.team2.id || 0)}
+                      {getQuestionStatusIcon(DifficultyLevel.HARD, 2)}
                     </div>
                   </button>
                 </div>

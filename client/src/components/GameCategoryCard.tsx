@@ -287,15 +287,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             </div>
           </div>
 
-          <div className="mb-4">
-            <div className="flex justify-between mb-1">
-              <span className="text-sm font-medium text-gray-600">إكتمال الفئة</span>
-              <span className="text-sm font-medium text-gray-800">{completionPercentage}%</span>
-            </div>
-            <div className="progress-bar">
-              <div className={`progress-value ${isCompleted ? 'bg-gray-400' : `bg-${color}-500`}`} style={{ width: `${completionPercentage}%` }}></div>
-            </div>
-          </div>
+
 
           <div className="flex justify-between items-center text-sm text-gray-700">
             <div className="flex items-center">
@@ -317,13 +309,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               </p>
               <div className="flex items-center justify-center gap-2 mb-2">
                 {getIcon(iconName)}
-                <h3 className="text-lg font-bold text-gray-800">{category.nameAr || category.name}</h3>
+                <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
               </div>
-              <div className="flex justify-center gap-2 text-xs text-gray-500">
-                <span>🔍 تلميح</span>
-                <span>📞 اتصال بصديق</span>
-                <span>👥 استشارة الجمهور</span>
-              </div>
+
             </div>
 
             <div className="space-y-3">
@@ -416,11 +404,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             </div>
           </div>
 
-          {isCompleted && (
-            <div className="absolute top-4 left-4 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs font-medium">
-              تم الإكمال
-            </div>
-          )}
+
         </div>
       </div>
     </motion.div>

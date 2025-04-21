@@ -16,6 +16,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
   const [isExpanded, setIsExpanded] = useState(false);
   
+  console.log("GameCategoryCard - category:", category);
+  console.log("GameCategoryCard - game teams:", { team1: game?.team1, team2: game?.team2 });
+  
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
     switch (iconName) {

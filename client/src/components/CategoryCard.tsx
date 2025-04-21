@@ -9,7 +9,18 @@ import { Badge } from "./ui/badge";
 import { CategoryUI, DifficultyLevel } from "@shared/schema";
 
 interface CategoryCardProps {
-  category: CategoryUI;
+  category: {
+    id: number;
+    name: string;
+    nameAr: string;
+    icon: string;
+    color: string;
+    description?: string;
+    descriptionAr?: string;
+    difficultyLevel: string;
+    questionCount?: number;
+    isActive?: boolean;
+  };
   isSelected?: boolean;
   onSelect?: (id: number) => void;
 }
@@ -41,7 +52,24 @@ export default function CategoryCard({
 
   // الحصول على لون خلفية الفئة
   const getBgColor = () => {
-    return `bg-${category.color}`;
+    // استخدم مخطط الألوان المثبت لإرجاع فئة CSS المناسبة
+    return colorMap[category.color] || 'bg-gray-500'; // استخدم رمادي كلون افتراضي
+  };
+  
+  // مخطط الألوان المثبت
+  const colorMap: Record<string, string> = {
+    'amber-600': 'bg-amber-600',
+    'blue-500': 'bg-blue-500',
+    'green-500': 'bg-green-500',
+    'purple-600': 'bg-purple-600',
+    'red-500': 'bg-red-500',
+    'pink-500': 'bg-pink-500',
+    'gray-700': 'bg-gray-700',
+    'yellow-600': 'bg-yellow-600',
+    'indigo-500': 'bg-indigo-500',
+    'green-600': 'bg-green-600',
+    'blue-600': 'bg-blue-600',
+    'teal-600': 'bg-teal-600',
   };
 
   // الحصول على شريحة صعوبة الفئة

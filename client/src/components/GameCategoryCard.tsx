@@ -14,10 +14,6 @@ interface GameCategoryCardProps {
 
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  console.log("GameCategoryCard - category:", category);
-  console.log("GameCategoryCard - game teams:", { team1: game?.team1, team2: game?.team2 });
   
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
@@ -158,10 +154,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     ((6 - remaining.total) / 6) * 100
   );
   
-  // معالجة النقر على البطاقة
+  // معالجة النقر على البطاقة - لم تعد مطلوبة
   const handleCardClick = () => {
-    if (isCompleted) return;
-    setIsExpanded(!isExpanded);
+    // فارغة لأن الأزرار ستكون ظاهرة دائماً
   };
   
   // معالجة اختيار المستوى
@@ -258,8 +253,8 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   return (
     <motion.div
       className={`category-card ${isCompleted ? 'opacity-75' : ''}`}
-      whileHover={{ y: isExpanded ? 0 : -5, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
-      whileTap={{ scale: isExpanded ? 1 : 0.98 }}
+      whileHover={{ y: -5, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
+      whileTap={{ scale: 0.98 }}
       onClick={handleCardClick}
       layout
     >
@@ -281,22 +276,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                   getIcon(iconName)
                 }
               </div>
-              
-              {!isCompleted && (
-                <button 
-                  className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsExpanded(!isExpanded);
-                  }}
-                >
-                  {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-gray-600" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-gray-600" />
-                  )}
-                </button>
-              )}
             </div>
           </div>
           
@@ -322,97 +301,87 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             </div>
           </div>
           
-          {/* عرض أسئلة الفئة */}
-          <AnimatePresence>
-            {isExpanded && !isCompleted && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mt-6 pt-4 border-t border-gray-200"
+          {/* عرض أسئلة الفئة - دائماً ظاهرة */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="mb-3">
+              <p className="text-center text-sm text-gray-600 mb-1">
+                دور الفريق: <span className="font-bold">{currentTeamName}</span>
+              </p>
+              
+              <p className="text-center text-xs text-gray-500">اختر رقم السؤال</p>
+            </div>
+            
+            <div className="space-y-3">
+              {/* رقم 1 (بدلاً من سهل) */}
+              <button
+                onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
+                disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
+                className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
+                  isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                    : 'bg-gray-300 cursor-not-allowed'
+                } transition-colors flex justify-between items-center`}
               >
-                <div className="mb-3">
-                  <p className="text-center text-sm text-gray-600 mb-1">
-                    دور الفريق: <span className="font-bold">{currentTeamName}</span>
-                  </p>
-                  
-                  <p className="text-center text-xs text-gray-500">اختر مستوى صعوبة للسؤال</p>
+                <div className="flex items-center gap-2">
+                  {getQuestionStatusIcon(DifficultyLevel.EASY, 1)}
+                  <span className="text-xs">{game?.team1.name}</span>
                 </div>
                 
-                <div className="space-y-3">
-                  {/* مستوى سهل */}
-                  <button
-                    onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
-                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
-                    className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
-                      isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
-                        ? getDifficultyColor(DifficultyLevel.EASY)
-                        : 'bg-gray-300 cursor-not-allowed'
-                    } transition-colors flex justify-between items-center`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {getQuestionStatusIcon(DifficultyLevel.EASY, 1)}
-                      <span className="text-xs">{game?.team1.name}</span>
-                    </div>
-                    
-                    <span>{getDifficultyLabel(DifficultyLevel.EASY)} - 1 نقطة</span>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs">{game?.team2.name}</span>
-                      {getQuestionStatusIcon(DifficultyLevel.EASY, 2)}
-                    </div>
-                  </button>
-                  
-                  {/* مستوى متوسط */}
-                  <button
-                    onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
-                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
-                    className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
-                      isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
-                        ? getDifficultyColor(DifficultyLevel.MEDIUM)
-                        : 'bg-gray-300 cursor-not-allowed'
-                    } transition-colors flex justify-between items-center`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 1)}
-                      <span className="text-xs">{game?.team1.name}</span>
-                    </div>
-                    
-                    <span>{getDifficultyLabel(DifficultyLevel.MEDIUM)} - 2 نقطة</span>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs">{game?.team2.name}</span>
-                      {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 2)}
-                    </div>
-                  </button>
-                  
-                  {/* مستوى صعب */}
-                  <button
-                    onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
-                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
-                    className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
-                      isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
-                        ? getDifficultyColor(DifficultyLevel.HARD)
-                        : 'bg-gray-300 cursor-not-allowed'
-                    } transition-colors flex justify-between items-center`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {getQuestionStatusIcon(DifficultyLevel.HARD, 1)}
-                      <span className="text-xs">{game?.team1.name}</span>
-                    </div>
-                    
-                    <span>{getDifficultyLabel(DifficultyLevel.HARD)} - 3 نقاط</span>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs">{game?.team2.name}</span>
-                      {getQuestionStatusIcon(DifficultyLevel.HARD, 2)}
-                    </div>
-                  </button>
+                <span className="text-lg font-bold">1</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-xs">{game?.team2.name}</span>
+                  {getQuestionStatusIcon(DifficultyLevel.EASY, 2)}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </button>
+              
+              {/* رقم 2 (بدلاً من متوسط) */}
+              <button
+                onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
+                disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
+                className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
+                  isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                    : 'bg-gray-300 cursor-not-allowed'
+                } transition-colors flex justify-between items-center`}
+              >
+                <div className="flex items-center gap-2">
+                  {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 1)}
+                  <span className="text-xs">{game?.team1.name}</span>
+                </div>
+                
+                <span className="text-lg font-bold">2</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-xs">{game?.team2.name}</span>
+                  {getQuestionStatusIcon(DifficultyLevel.MEDIUM, 2)}
+                </div>
+              </button>
+              
+              {/* رقم 3 (بدلاً من صعب) */}
+              <button
+                onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
+                disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
+                className={`w-full py-3 px-4 rounded-xl text-white font-medium ${
+                  isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                    : 'bg-gray-300 cursor-not-allowed'
+                } transition-colors flex justify-between items-center`}
+              >
+                <div className="flex items-center gap-2">
+                  {getQuestionStatusIcon(DifficultyLevel.HARD, 1)}
+                  <span className="text-xs">{game?.team1.name}</span>
+                </div>
+                
+                <span className="text-lg font-bold">3</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-xs">{game?.team2.name}</span>
+                  {getQuestionStatusIcon(DifficultyLevel.HARD, 2)}
+                </div>
+              </button>
+            </div>
+          </div>
           
           {isCompleted && (
             <div className="absolute top-4 left-4 bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs font-medium">

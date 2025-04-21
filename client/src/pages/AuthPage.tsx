@@ -67,6 +67,12 @@ export default function AuthPage() {
   // التبويب النشط (تسجيل الدخول أو التسجيل)
   const [activeTab, setActiveTab] = useState<string>(showRegister ? "register" : "login");
 
+  // تحديث العنوان عند تغيير التبويب
+  useEffect(() => {
+    const newSearch = activeTab === "register" ? "?register=true" : "";
+    window.history.replaceState(null, "", `/auth${newSearch}`);
+  }, [activeTab]);
+  
   // إذا كان المستخدم مسجل الدخول بالفعل، نقوم بتوجيهه إلى الصفحة الرئيسية
   useEffect(() => {
     if (user) {
@@ -115,12 +121,6 @@ export default function AuthPage() {
       </div>
     );
   }
-
-  // تحديث العنوان عند تغيير التبويب
-  useEffect(() => {
-    const newSearch = activeTab === "register" ? "?register=true" : "";
-    window.history.replaceState(null, "", `/auth${newSearch}`);
-  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-hero-pattern overflow-hidden">

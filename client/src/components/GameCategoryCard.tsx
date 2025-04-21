@@ -35,35 +35,35 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
 
   // تحديد الأيقونة بناءً على اسم الفئة
   const getCategoryIcon = () => {
-    const name = category.name.toLowerCase();
-    if (name.includes('history') || name.includes('تاريخ')) return 'BookOpen';
-    if (name.includes('science') || name.includes('علوم')) return 'Atom';
-    if (name.includes('geography') || name.includes('جغرافيا')) return 'Globe';
-    if (name.includes('literature') || name.includes('أدب')) return 'BookText';
-    if (name.includes('sports') || name.includes('رياضة')) return 'Trophy';
-    if (name.includes('arts') || name.includes('فنون')) return 'Palette';
-    if (name.includes('technology') || name.includes('تكنولوجيا')) return 'Cpu';
-    if (name.includes('movies') || name.includes('أفلام')) return 'Film';
-    if (name.includes('music') || name.includes('موسيقى')) return 'Music';
-    if (name.includes('food') || name.includes('طعام')) return 'Utensils';
-    if (name.includes('math') || name.includes('رياضيات')) return 'Calculator';
+    const nameLower = category.name.toLowerCase();
+    if (nameLower.includes('history') || nameLower.includes('تاريخ')) return 'BookOpen';
+    if (nameLower.includes('science') || nameLower.includes('علوم')) return 'Atom';
+    if (nameLower.includes('geography') || nameLower.includes('جغرافيا')) return 'Globe';
+    if (nameLower.includes('literature') || nameLower.includes('أدب')) return 'BookText';
+    if (nameLower.includes('sports') || nameLower.includes('رياضة')) return 'Trophy';
+    if (nameLower.includes('arts') || nameLower.includes('فنون')) return 'Palette';
+    if (nameLower.includes('technology') || nameLower.includes('تكنولوجيا')) return 'Cpu';
+    if (nameLower.includes('movies') || nameLower.includes('أفلام')) return 'Film';
+    if (nameLower.includes('music') || nameLower.includes('موسيقى')) return 'Music';
+    if (nameLower.includes('food') || nameLower.includes('طعام')) return 'Utensils';
+    if (nameLower.includes('math') || nameLower.includes('رياضيات')) return 'Calculator';
     return 'BookOpen';
   };
 
   // تحديد لون الفئة بناءً على اسمها
   const getCategoryColor = () => {
-    const name = category.name.toLowerCase();
-    if (name.includes('history') || name.includes('تاريخ')) return 'amber';
-    if (name.includes('science') || name.includes('علوم')) return 'blue';
-    if (name.includes('geography') || name.includes('جغرافيا')) return 'green';
-    if (name.includes('literature') || name.includes('أدب')) return 'purple';
-    if (name.includes('sports') || name.includes('رياضة')) return 'red';
-    if (name.includes('arts') || name.includes('فنون')) return 'pink';
-    if (name.includes('technology') || name.includes('تكنولوجيا')) return 'gray';
-    if (name.includes('movies') || name.includes('أفلام')) return 'yellow';
-    if (name.includes('music') || name.includes('موسيقى')) return 'indigo';
-    if (name.includes('food') || name.includes('طعام')) return 'emerald';
-    if (name.includes('math') || name.includes('رياضيات')) return 'cyan';
+    const nameLower = category.name.toLowerCase();
+    if (nameLower.includes('history') || nameLower.includes('تاريخ')) return 'amber';
+    if (nameLower.includes('science') || nameLower.includes('علوم')) return 'blue';
+    if (nameLower.includes('geography') || nameLower.includes('جغرافيا')) return 'green';
+    if (nameLower.includes('literature') || nameLower.includes('أدب')) return 'purple';
+    if (nameLower.includes('sports') || nameLower.includes('رياضة')) return 'red';
+    if (nameLower.includes('arts') || nameLower.includes('فنون')) return 'pink';
+    if (nameLower.includes('technology') || nameLower.includes('تكنولوجيا')) return 'gray';
+    if (nameLower.includes('movies') || nameLower.includes('أفلام')) return 'yellow';
+    if (nameLower.includes('music') || nameLower.includes('موسيقى')) return 'indigo';
+    if (nameLower.includes('food') || nameLower.includes('طعام')) return 'emerald';
+    if (nameLower.includes('math') || nameLower.includes('رياضيات')) return 'cyan';
     return 'violet';
   };
 

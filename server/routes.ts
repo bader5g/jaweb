@@ -68,6 +68,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
   
   // API Routes
+  // الحصول على جميع التصنيفات المتاحة
+  app.get('/api/categories', async (_req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء البحث عن التصنيفات" });
+    }
+  });
+
   app.post('/api/games', async (req, res) => {
     try {
       const schema = z.object({

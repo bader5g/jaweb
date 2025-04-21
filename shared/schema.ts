@@ -57,7 +57,14 @@ export const games = pgTable("games", {
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  gameId: text("game_id").notNull(),
+  nameAr: text("name_ar").notNull(),
+  icon: text("icon").notNull(), // اسم الأيقونة من مكتبة Lucide
+  color: text("color").notNull(), // لون البطاقة (مثل: primary, sky-500, amber-400)
+  description: text("description"),
+  descriptionAr: text("description_ar"),
+  difficultyLevel: text("difficulty_level").default(DifficultyLevel.MEDIUM), // مستوى صعوبة الأسئلة
+  isActive: boolean("is_active").default(true).notNull(),
+  gameId: text("game_id"),
 });
 
 // Users table
@@ -85,6 +92,22 @@ export const questions = pgTable("questions", {
   teamId: integer("team_id").references(() => teams.id),
   isAnswered: boolean("is_answered").notNull().default(false),
 });
+
+// Category schema for UI
+export const categorySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  nameAr: z.string(),
+  icon: z.string(), 
+  color: z.string(),
+  description: z.string().optional(),
+  descriptionAr: z.string().optional(),
+  difficultyLevel: z.string(),
+  isActive: z.boolean(),
+  questionCount: z.number().optional(),
+});
+
+export type CategoryUI = z.infer<typeof categorySchema>;
 
 // Game schema
 export const gameSchema = z.object({

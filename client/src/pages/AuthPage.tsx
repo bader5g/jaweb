@@ -144,7 +144,7 @@ export default function AuthPage() {
           <div className="w-full lg:w-5/12">
             <Card className="w-full max-w-md mx-auto border-0 shadow-2xl bg-glass">
               <CardHeader className="pb-4">
-                <CardTitle className="text-3xl text-center bg-gradient-to-r from-primary to-purple-700 bg-clip-text text-transparent">
+                <CardTitle className="text-3xl text-center bg-gradient-to-r from-sky-500 to-primary bg-clip-text text-transparent">
                   {activeTab === "login" ? "تسجيل الدخول" : "إنشاء حساب جديد"}
                 </CardTitle>
                 <CardDescription className="text-center text-lg">
@@ -307,7 +307,7 @@ export default function AuthPage() {
           {/* قسم الترحيب */}
           <div className="w-full lg:w-7/12 text-center lg:text-right">
             <div className="lg:ml-0 lg:mr-auto max-w-xl bg-glass backdrop-blur-sm p-10 rounded-3xl shadow-xl">
-              <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-sky-500 to-primary bg-clip-text text-transparent">
                 مرحباً بك في موقع جاوب!
               </h1>
               <p className="text-xl mb-8 leading-relaxed">

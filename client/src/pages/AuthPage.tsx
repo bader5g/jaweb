@@ -335,7 +335,7 @@ export default function AuthPage() {
                     </div>
                     <h3 className="text-xl font-bold">لعب تنافسي</h3>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-800 dark:text-gray-200">
                     شكل فريقك وتنافس في مسابقة ممتعة لاختبار معلوماتكم ضد الفرق الأخرى
                   </p>
                 </div>
@@ -347,7 +347,7 @@ export default function AuthPage() {
                     </div>
                     <h3 className="text-xl font-bold">مستويات متدرجة</h3>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-800 dark:text-gray-200">
                     اختر مستوى الصعوبة المناسب لك واستمتع بتحديات متنوعة تناسب جميع المستويات
                   </p>
                 </div>
@@ -359,7 +359,7 @@ export default function AuthPage() {
                     </div>
                     <h3 className="text-xl font-bold">نظام مكافآت</h3>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-800 dark:text-gray-200">
                     اكسب النقاط وارتقِ بمستواك من البرونزي إلى الفضي والذهبي والبلاتيني
                   </p>
                 </div>

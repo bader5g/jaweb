@@ -7,6 +7,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import CategoryGrid from "../components/CategoryGrid";
+import SelectedCategoriesFloater from "../components/SelectedCategoriesFloater";
 import { Shield, BrainCircuit, Timer } from "lucide-react";
 
 export default function Home() {
@@ -191,6 +192,13 @@ export default function Home() {
           العب مع صديق أو فريق وتنافسوا في فئات متنوعة من الأسئلة
         </p>
       </div>
+
+      {/* قائمة الفئات المختارة العائمة */}
+      <SelectedCategoriesFloater 
+        selectedCategories={selectedCategories}
+        onRemoveCategory={(id) => handleCategorySelect(id)}
+        maxSelectedCategories={8}
+      />
     </div>
   );
 }

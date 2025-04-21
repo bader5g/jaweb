@@ -143,6 +143,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
       
       const newGame = await res.json();
       setGame(newGame);
+      
+      // إرسال معلومات اللعبة إلى WebSocket
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'join', gameId: newGame.id }));
+      }
+      
+      // تحويل المستخدم إلى صفحة اللعب مباشرة
+      navigate('/play');
+      
+      // عرض رسالة نجاح
+      toast({
+        title: "تم إنشاء اللعبة",
+        description: `تم إنشاء اللعبة "${gameName || 'لعبة جديدة'}" بنجاح!`,
+        variant: "default"
+      });
+      
       return newGame;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء إنشاء اللعبة';

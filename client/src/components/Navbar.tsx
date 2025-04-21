@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/use-auth";
 import { Loader2, Award, Star, MenuIcon, XIcon, LogOut, User, Home, Trophy } from "lucide-react";
 import { UserLevel } from "@shared/schema";
-import logoSvg from "../assets/logo-professional-2.svg";
+import logoSvg from "../assets/logo-white.svg";
 
 // مكون عرض معلومات المستخدم المسجل
 const UserProfile = () => {

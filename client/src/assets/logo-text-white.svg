@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="100" viewBox="0 0 240 100">
+  <defs>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </linearGradient>
+    <filter id="textShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <filter id="textGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Main Text Logo with Modern Treatment -->
+  <g transform="translate(120, 50)" text-anchor="middle">
+    <!-- Glow Effect -->
+    <text 
+      font-family="Tajawal, Arial" 
+      font-size="66" 
+      font-weight="bold" 
+      fill="rgba(255, 255, 255, 0.2)" 
+      filter="url(#textGlow)"
+    >جاوب</text>
+    
+    <!-- Main Text -->
+    <text 
+      font-family="Tajawal, Arial" 
+      font-size="66" 
+      font-weight="bold" 
+      fill="url(#textGradient)" 
+      filter="url(#textShadow)"
+    >جاوب</text>
+    
+    <!-- Decorative Question Mark -->
+    <text 
+      font-family="Tajawal, Arial" 
+      font-size="24" 
+      font-weight="bold" 
+      fill="#FFFFFF" 
+      x="70" 
+      y="-15"
+    >؟</text>
+    
+    <!-- Tagline -->
+    <text 
+      font-family="Tajawal, Arial" 
+      font-size="16" 
+      font-weight="normal" 
+      fill="#FFFFFF" 
+      y="30"
+    >تحدي المعرفة</text>
+    
+    <!-- Decorative Elements -->
+    <g stroke="#FFFFFF" stroke-width="2" opacity="0.5" fill="none">
+      <!-- Circular arc around the text -->
+      <path d="M-80,0 A80,30 0 0,1 80,0" />
+      <path d="M-80,0 A80,30 0 0,0 80,0" />
+    </g>
+    
+    <!-- Decorative Dots -->
+    <g fill="#FFFFFF">
+      <circle cx="-80" cy="0" r="3" />
+      <circle cx="80" cy="0" r="3" />
+      <circle cx="-40" cy="-20" r="2" />
+      <circle cx="40" cy="-20" r="2" />
+      <circle cx="-40" cy="20" r="2" />
+      <circle cx="40" cy="20" r="2" />
+    </g>
+  </g>
+</svg>

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "../hooks/use-auth";
-import logoSvg from "../assets/logo-white.svg";
+import logoSvg from "../assets/logo-text-white.svg";
 import authBgSvg from "../assets/auth-bg.svg";
 
 // UI Components

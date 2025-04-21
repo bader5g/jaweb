@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useGame } from "@/lib/gameContext";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MinusCircle, Trophy, Clock, ArrowLeft, ArrowRight, Star } from "lucide-react";
+import { PlusCircle, MinusCircle, Trophy, Clock, ArrowLeft, ArrowRight, Star, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import TeamHelpOptions from "./TeamHelpOptions";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ScoreBoard() {
   const { game, getCurrentTeam, updateTeamScore } = useGame();
   const [animateTeam1, setAnimateTeam1] = useState(false);
   const [animateTeam2, setAnimateTeam2] = useState(false);
+  const [showGameLog, setShowGameLog] = useState(false);
   
   if (!game) return null;
   

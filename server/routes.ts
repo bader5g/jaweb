@@ -326,6 +326,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ error: (error as Error).message });
     }
   });
+  
+  // Game Log API Routes
+  app.post('/api/games/:id/logs', async (req, res) => {
+    try {
+      const gameId = req.params.id;
+      const schema = z.object({
+        action: z.string(),
+        teamId: z.number().optional(),
+        questionId: z.number().optional(),
+        categoryId: z.number().optional(),
+        details: z.record(z.unknown()).optional()
+      });
+      
+      const logData = schema.parse(req.body);
+      const gameLog = await storage.createGameLog({
+        gameId,
+        action: logData.action,
+        teamId: logData.teamId,
+        questionId: logData.questionId,
+        categoryId: logData.categoryId,
+        details: logData.details
+      });
+      
+      res.status(201).json(gameLog);
+    } catch (error) {
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
+  
+  app.get('/api/games/:id/logs', async (req, res) => {
+    try {
+      const gameId = req.params.id;
+      const logs = await storage.getGameLogs(gameId);
+      res.json(logs);
+    } catch (error) {
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
 
   return httpServer;
 }

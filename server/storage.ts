@@ -5,6 +5,7 @@ import {
   categories, Category, InsertCategory,
   questions, Question, InsertQuestion,
   users, DbUser, InsertUser,
+  gameLogs, GameLog, InsertGameLog,
   Game, gameSchema, DifficultyLevel, UserLevel
 } from "@shared/schema";
 import { db } from "./db";
@@ -15,7 +16,7 @@ import { pool } from "./db";
 
 export interface IStorage {
   // Game operations
-  createGame(categoryCount: number, team1Name: string, team2Name: string): Promise<Game>;
+  createGame(categoryCount: number, team1Name: string, team2Name: string, answerTime?: number, gameName?: string, selectedCategoryIds?: number[]): Promise<Game>;
   getGame(id: string): Promise<Game | undefined>;
   updateGameState(id: string, state: string): Promise<Game | undefined>;
   updateCurrentTeam(id: string, teamId: number): Promise<Game | undefined>;
@@ -41,12 +42,43 @@ export interface IStorage {
   updateUserPoints(id: number, points: number): Promise<DbUser | undefined>;
   updateUserLevel(id: number, level: string): Promise<DbUser | undefined>;
   
+  // Game logs operations
+  createGameLog(log: InsertGameLog): Promise<GameLog>;
+  getGameLogs(gameId: string): Promise<GameLog[]>;
+  
   // Session store for auth
   sessionStore: any;
 }
 
 export class DatabaseStorage implements IStorage {
   public sessionStore: any;
+  
+  async createGameLog(log: InsertGameLog): Promise<GameLog> {
+    try {
+      const [gameLog] = await db
+        .insert(gameLogs)
+        .values(log)
+        .returning();
+      return gameLog;
+    } catch (error) {
+      console.error('Error creating game log:', error);
+      throw error;
+    }
+  }
+  
+  async getGameLogs(gameId: string): Promise<GameLog[]> {
+    try {
+      const logs = await db
+        .select()
+        .from(gameLogs)
+        .where(eq(gameLogs.gameId, gameId))
+        .orderBy(gameLogs.timestamp);
+      return logs;
+    } catch (error) {
+      console.error('Error fetching game logs:', error);
+      throw error;
+    }
+  }
 
   constructor() {
     const PostgresSessionStore = connectPg(session);

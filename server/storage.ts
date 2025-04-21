@@ -140,7 +140,7 @@ export class DatabaseStorage implements IStorage {
           team1Id: team1.id,
           team2Id: team2.id,
           currentTeamId: team1.id,
-          state: "setup",
+          state: "category_selection", // تغيير من setup إلى category_selection
           categoryCount,
           currentCategory: null,
           currentDifficulty: null,

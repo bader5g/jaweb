@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, Atom, Globe, BookText, Trophy, Palette, 
   Cpu, Film, Music, Utensils, Calculator, CheckCircle,
-  ChevronDown, ChevronUp, Check, X, HelpCircle
+  ChevronDown, ChevronUp, Check, X, HelpCircle, Star
 } from 'lucide-react';
 
 interface GameCategoryCardProps {
@@ -303,15 +303,22 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
 
           {/* عرض أسئلة الفئة - دائماً ظاهرة */}
           <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="mb-3">
-              <p className="text-center text-sm text-gray-600 mb-1">
-                دور الفريق: <span className="font-bold">{currentTeamName}</span>
-              </p>
+            <div className="mb-4">
               <div className="flex items-center justify-center gap-2 mb-2">
                 {getIcon(iconName)}
                 <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
               </div>
-
+            </div>
+            
+            {/* عرض دور الفريق الحالي - في الأعلى */}
+            <div className="p-3 bg-primary-50 rounded-xl mb-4 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <Star className="h-5 w-5 text-primary animate-pulse" />
+                <p className="font-bold text-gray-800">
+                  دور الفريق: <span className="text-primary">{currentTeamName}</span>
+                </p>
+                <Star className="h-5 w-5 text-primary animate-pulse" />
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -400,6 +407,17 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                   {getQuestionStatusIcon(DifficultyLevel.HARD, 2)}
                   <span className="text-lg font-bold mr-2">3</span>
                 </button>
+              </div>
+              
+              {/* عرض دور الفريق الحالي - في الأسفل */}
+              <div className="p-3 bg-primary-50 rounded-xl mt-4 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <ChevronDown className="h-5 w-5 text-primary animate-bounce" />
+                  <p className="font-bold text-gray-800">
+                    دور الفريق: <span className="text-primary">{currentTeamName}</span>
+                  </p>
+                  <ChevronDown className="h-5 w-5 text-primary animate-bounce" />
+                </div>
               </div>
             </div>
           </div>

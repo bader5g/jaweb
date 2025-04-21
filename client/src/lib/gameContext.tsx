@@ -32,62 +32,109 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  // Setup WebSocket connection when game changes
+  // الإعداد ومحاولة إعادة الاتصال بـ WebSocket
   useEffect(() => {
-    if (game?.id && !socket) {
-      try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
-        console.log('Connecting to WebSocket at:', wsUrl);
-        
-        const ws = new WebSocket(wsUrl);
-        
-        ws.addEventListener('open', () => {
-          console.log('WebSocket connection established');
-          ws.send(JSON.stringify({ type: 'join', gameId: game.id }));
-        });
-        
-        ws.addEventListener('message', (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'game_state') {
-              setGame(data.game);
+    // تتبع محاولات الاتصال ومؤقت إعادة المحاولة
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    
+    const connectWebSocket = () => {
+      if (game?.id && !socket) {
+        try {
+          // تحديد بروتوكول الاتصال بناء على الموقع
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const wsUrl = `${protocol}//${window.location.host}/ws`;
+          console.log('Connecting to WebSocket at:', wsUrl);
+          
+          const ws = new WebSocket(wsUrl);
+          
+          // معالجة فتح الاتصال
+          ws.onopen = () => {
+            console.log('WebSocket connection established');
+            reconnectAttempts = 0; // إعادة تعيين محاولات الاتصال عند النجاح
+            
+            // إرسال طلب الانضمام إلى اللعبة
+            ws.send(JSON.stringify({ type: 'join', gameId: game.id }));
+            
+            // تأكيد الاتصال عندما ينجح
+            toast({
+              title: "تم الاتصال",
+              description: "تم الاتصال بالخادم بنجاح",
+              variant: "default"
+            });
+          };
+          
+          // معالجة الرسائل الواردة
+          ws.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              if (data.type === 'game_state') {
+                setGame(data.game);
+              }
+            } catch (err) {
+              console.error('Error parsing WebSocket message:', err);
             }
-          } catch (err) {
-            console.error('Error parsing WebSocket message:', err);
-          }
-        });
-        
-        ws.addEventListener('error', (err) => {
-          console.error('WebSocket error:', err);
+          };
+          
+          // معالجة أخطاء الاتصال
+          ws.onerror = (err) => {
+            console.error('WebSocket error:', err);
+          };
+          
+          // معالجة إغلاق الاتصال
+          ws.onclose = (event) => {
+            console.log('WebSocket connection closed:', event.code, event.reason);
+            setSocket(null);
+            
+            // محاولة إعادة الاتصال إذا كانت هناك محاولات متبقية
+            if (reconnectAttempts < maxReconnectAttempts) {
+              reconnectAttempts++;
+              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+              console.log(`Attempting to reconnect in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})...`);
+              
+              reconnectTimer = setTimeout(() => {
+                connectWebSocket();
+              }, delay);
+            } else {
+              toast({
+                title: "فشل الاتصال",
+                description: "تعذر الاتصال بالخادم بعد عدة محاولات",
+                variant: "destructive"
+              });
+              // قم بتوجيه المستخدم إلى الصفحة الرئيسية إذا فشل الاتصال بشكل كامل
+              navigate('/');
+            }
+          };
+          
+          setSocket(ws);
+        } catch (error) {
+          console.error('Failed to establish WebSocket connection:', error);
           toast({
             title: "خطأ في الاتصال",
-            description: "حدث خطأ في الاتصال بالخادم",
+            description: "تعذر الاتصال بالخادم",
             variant: "destructive"
           });
-        });
-        
-        ws.addEventListener('close', (event) => {
-          console.log('WebSocket connection closed:', event.code, event.reason);
-        });
-        
-        setSocket(ws);
-        
-        return () => {
-          console.log('Closing WebSocket connection');
-          ws.close();
-          setSocket(null);
-        };
-      } catch (error) {
-        console.error('Failed to establish WebSocket connection:', error);
-        toast({
-          title: "خطأ في الاتصال",
-          description: "تعذر الاتصال بالخادم",
-          variant: "destructive"
-        });
+        }
       }
-    }
-  }, [game?.id, toast]);
+    };
+    
+    // بدء الاتصال
+    connectWebSocket();
+    
+    // تنظيف عند تفكيك المكون
+    return () => {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+      
+      if (socket) {
+        console.log('Closing WebSocket connection');
+        socket.close();
+        setSocket(null);
+      }
+    };
+  }, [game?.id, toast, socket, navigate]);
 
   const createGame = async (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string): Promise<Game | null> => {
     setLoading(true);
@@ -146,15 +193,41 @@ export function GameProvider({ children }: { children: ReactNode }) {
     
     try {
       await apiRequest('POST', `/api/games/${game.id}/start`);
+      
+      // تحويل المستخدم إلى صفحة اللعبة
       navigate('/play');
+      
+      // عرض رسالة ترحيبية في حالة نجاح بدء اللعبة
+      toast({
+        title: "تم بدء اللعبة",
+        description: `اللعبة جاهزة! جاري تحميل اللعبة "${game.name || 'لعبة جديدة'}"`,
+        variant: "default"
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء بدء اللعبة';
       setError(errorMessage);
       toast({
-        title: "خطأ",
+        title: "خطأ في بدء اللعبة",
         description: errorMessage,
         variant: "destructive"
       });
+      
+      // في حالة الفشل، نمنح المستخدم فرصة أخرى للمحاولة
+      setTimeout(() => {
+        toast({
+          title: "إعادة المحاولة",
+          description: "يمكنك المحاولة مرة أخرى أو العودة إلى الصفحة الرئيسية",
+          variant: "default",
+          action: (
+            <button 
+              onClick={() => navigate('/')}
+              className="bg-primary text-white px-4 py-2 rounded-md text-xs"
+            >
+              العودة للرئيسية
+            </button>
+          )
+        });
+      }, 3000);
     } finally {
       setLoading(false);
     }

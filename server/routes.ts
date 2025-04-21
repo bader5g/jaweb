@@ -13,22 +13,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // Setup WebSocket server with specific path to avoid conflicts with Vite HMR
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws',
+    // Make the websocket more permissive with connections
+    perMessageDeflate: false,
+    clientTracking: true
+  });
+  
+  console.log('WebSocket server initialized on path /ws');
   
   // Store active connections by game ID
   const connections: Record<string, WebSocket[]> = {};
   
-  wss.on('connection', (ws) => {
+  wss.on('connection', (ws, req) => {
+    console.log('New WebSocket connection from:', req.socket.remoteAddress);
     let gameId = '';
     
     // Handle messages
-    ws.addEventListener('message', async (event) => {
+    ws.on('message', async (message) => {
       try {
-        const data = JSON.parse(event.data.toString());
+        const data = JSON.parse(message.toString());
+        console.log('Received WebSocket message:', data);
         
         // Handle join game request
         if (data.type === 'join' && data.gameId) {
           gameId = data.gameId;
+          console.log(`Client joined game: ${gameId}`);
           
           // Add this connection to the game
           if (!connections[gameId]) {
@@ -40,6 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const game = await storage.getGame(gameId);
           if (game) {
             ws.send(JSON.stringify({ type: 'game_state', game }));
+            console.log(`Sent initial game state for game: ${gameId}`);
           }
         }
       } catch (error) {
@@ -48,22 +60,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
     
     // Handle disconnect
-    ws.addEventListener('close', () => {
+    ws.on('close', (code, reason) => {
+      console.log(`WebSocket closed with code ${code}, reason: ${reason}`);
       if (gameId && connections[gameId]) {
         connections[gameId] = connections[gameId].filter(conn => conn !== ws);
+        console.log(`Client left game: ${gameId}, remaining clients: ${connections[gameId].length}`);
       }
+    });
+    
+    // Handle errors
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
     });
   });
   
   // Helper function to broadcast game updates
   const broadcastGame = (gameId: string, game: any) => {
-    if (connections[gameId]) {
+    if (connections[gameId] && connections[gameId].length > 0) {
       const message = JSON.stringify({ type: 'game_state', game });
-      connections[gameId].forEach(conn => {
-        if (conn.readyState === WebSocket.OPEN) {
-          conn.send(message);
-        }
-      });
+      
+      console.log(`Broadcasting game update to ${connections[gameId].length} clients for game ${gameId}`);
+      
+      // تصفية الاتصالات المفتوحة
+      const activeConnections = connections[gameId].filter(conn => conn.readyState === WebSocket.OPEN);
+      
+      // إذا كانت هناك اتصالات مفتوحة، قم بإرسال التحديث إليها
+      if (activeConnections.length > 0) {
+        activeConnections.forEach(conn => {
+          try {
+            conn.send(message);
+          } catch (error) {
+            console.error('Error sending message to client:', error);
+          }
+        });
+        console.log(`Successfully sent update to ${activeConnections.length} clients`);
+      } else {
+        console.log('No active connections to broadcast to');
+      }
+      
+      // تحديث قائمة الاتصالات لإزالة الاتصالات المغلقة
+      connections[gameId] = activeConnections;
+    } else {
+      console.log(`No connections found for game ${gameId}`);
     }
   };
   

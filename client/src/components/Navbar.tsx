@@ -144,7 +144,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link href="/">
           <div className="flex items-center gap-2 group">
-            <img src={logoSvg} alt="جاوب" className="h-10 transition-transform duration-300 group-hover:scale-110" />
+            <img src={logoSvg} alt="جاوب" className="h-14 transition-transform duration-300 group-hover:scale-110" />
           </div>
         </Link>
 

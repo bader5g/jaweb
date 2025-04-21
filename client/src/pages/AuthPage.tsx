@@ -135,7 +135,7 @@ export default function AuthPage() {
         {/* شعار التطبيق */}
         <div className="flex justify-center mb-8">
           <div className="animate-float">
-            <img src={logoSvg} alt="جاوب" className="h-20" />
+            <img src={logoSvg} alt="جاوب" className="h-28" />
           </div>
         </div>
         

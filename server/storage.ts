@@ -534,7 +534,7 @@ export class DatabaseStorage implements IStorage {
     // توزيع الأسئلة بالتساوي بين الفريقين - 3 أسئلة لكل فريق
     [1, 2].forEach(teamId => {
       difficulties.forEach(difficulty => {
-        questions.push({
+        const currentQuestion = {
           id: questions.length + 1,
           text: `سؤال ${difficulty} (${questions.length + 1}) للفريق ${teamId}`,
           answer: `إجابة السؤال ${questions.length + 1}`,
@@ -544,7 +544,8 @@ export class DatabaseStorage implements IStorage {
           gameId,
           teamId,
           isAnswered: false
-        });
+        };
+        questions.push(currentQuestion);
       });
     });
 

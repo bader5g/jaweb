@@ -12,24 +12,18 @@ import { Shield, BrainCircuit, Timer } from "lucide-react";
 export default function Home() {
   const { startNewGame } = useGame();
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [gameName, setGameName] = useState("");
   const [team1Name, setTeam1Name] = useState("الفريق الأزرق");
   const [team2Name, setTeam2Name] = useState("الفريق الأحمر");
   const [answerTime, setAnswerTime] = useState("30");
   
-  // تصفية الفئات بناءً على البحث
-  const filteredCategories = SAMPLE_CATEGORIES.filter((category) => 
-    category.name.includes(searchTerm)
-  );
-  
   useEffect(() => {
     // إعادة تعيين حالة اللعبة في الصفحة الرئيسية
     startNewGame();
   }, [startNewGame]);
   
-  const handleCategoryToggle = (categoryId: number) => {
+  const handleCategorySelect = (categoryId: number) => {
     if (selectedCategories.includes(categoryId)) {
       setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
     } else {
@@ -46,7 +40,7 @@ export default function Home() {
       team1Name,
       team2Name,
       answerTime,
-      selectedCategories: selectedCategories.map(id => SAMPLE_CATEGORIES.find(cat => cat.id === id)?.name)
+      selectedCategories
     });
     
     // الانتقال إلى صفحة إعداد اللعبة
@@ -181,37 +175,14 @@ export default function Home() {
           <h2 className="text-2xl font-bold">
             اختر الفئات ({selectedCategories.length}/8)
           </h2>
-          <div>
-            <Input
-              className="max-w-xs"
-              placeholder="ابحث عن فئة..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredCategories.map((category) => (
-            <div 
-              key={category.id}
-              className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                selectedCategories.includes(category.id) 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-border hover:border-primary/50'
-              }`}
-              onClick={() => handleCategoryToggle(category.id)}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">{category.name}</h3>
-                <Checkbox 
-                  checked={selectedCategories.includes(category.id)} 
-                  onCheckedChange={() => handleCategoryToggle(category.id)}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* عرض شبكة التصنيفات */}
+        <CategoryGrid 
+          maxSelections={8} 
+          selectedCategories={selectedCategories}
+          onSelectCategory={handleCategorySelect}
+        />
       </div>
       
       {/* قسم المعلومات السفلي */}

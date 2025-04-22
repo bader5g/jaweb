@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGame } from "@/lib/gameContext";
 import { Category, Question, DifficultyLevel } from "@/lib/types";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   BookOpen, Atom, Globe, BookText, Trophy, Palette, 
   Cpu, Film, Music, Utensils, Calculator, CheckCircle,
-  ChevronDown, ChevronUp, Check, X, HelpCircle, Star
+  Check, X, HelpCircle, Star
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +16,6 @@ interface GameCategoryCardProps {
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty } = useGame();
   const { toast } = useToast();
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
@@ -123,13 +122,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const remaining = remainingQuestions();
   const isCompleted = remaining.total === 0;
 
-  // معالجة النقر على البطاقة - توسيع/تضييق البطاقة
-  const handleCardClick = () => {
-    if (!isCompleted) {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
   // معالجة اختيار المستوى
   const handleSelectDifficulty = async (difficultyLevel: string) => {
     try {
@@ -137,7 +129,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         console.log("سيتم اختيار الفئة:", category.name);
         toast({
           title: "جاري تحميل السؤال",
-          description: `من فئة ${category.name} بمستوى ${getDifficultyLabel(difficultyLevel)}`,
+          description: `من فئة ${category.name}`,
         });
 
         // أولاً: اختيار الفئة
@@ -157,7 +149,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               variant: "destructive"
             });
           }
-          // عند نجاح اختيار المستوى، سيتغير state تلقائياً وسيظهر السؤال
         } else {
           toast({
             title: "تعذر اختيار الفئة",
@@ -176,36 +167,16 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
     }
   };
 
-  // تحويل المستوى إلى عنوان بالعربية
-  const getDifficultyLabel = (difficulty: string): string => {
-    switch (difficulty) {
-      case DifficultyLevel.EASY: return 'سهل';
-      case DifficultyLevel.MEDIUM: return 'متوسط';
-      case DifficultyLevel.HARD: return 'صعب';
-      default: return 'غير محدد';
-    }
-  };
-
-  // تحديد لون خلفية زر المستوى
-  const getDifficultyColor = (difficulty: string): string => {
-    switch (difficulty) {
-      case DifficultyLevel.EASY:
-        return 'bg-green-600 hover:bg-green-700';
-      case DifficultyLevel.MEDIUM:
-        return 'bg-yellow-600 hover:bg-yellow-700';
-      case DifficultyLevel.HARD:
-        return 'bg-red-600 hover:bg-red-700';
-      default:
-        return 'bg-primary hover:bg-primary-dark';
-    }
-  };
-
   // التحقق مما إذا كان السؤال متاحاً للفريق الحالي
-  const isQuestionAvailableForCurrentTeam = (difficulty: string): boolean => {
+  const isQuestionAvailableForCurrentTeam = (difficulty: string, teamNumber: number): boolean => {
     if (!game) return false;
 
     const currentTeamId = game.currentTeamId;
-    const teamKey = currentTeamId === game.team1.id ? 'team1' : 'team2';
+    const teamKey = teamNumber === 1 ? 'team1' : 'team2';
+    const isCurrentTeam = (teamNumber === 1 && currentTeamId === game.team1.id) || 
+                          (teamNumber === 2 && currentTeamId === game.team2.id);
+    
+    if (!isCurrentTeam) return false;
 
     let questions;
     if (difficulty === DifficultyLevel.EASY) {
@@ -222,11 +193,8 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   };
 
   // الحصول على أيقونة حالة السؤال
-  const getQuestionStatusIcon = (difficulty: string) => {
-    if (!game) return <HelpCircle className="h-4 w-4 text-gray-400" />;
-
-    const currentTeamId = game.currentTeamId;
-    const teamKey = currentTeamId === game.team1.id ? 'team1' : 'team2';
+  const getQuestionStatusIcon = (difficulty: string, teamNumber: number) => {
+    const teamKey = teamNumber === 1 ? 'team1' : 'team2';
     
     let questions;
     if (difficulty === DifficultyLevel.EASY) {
@@ -253,12 +221,59 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
 
   const currentTeamName = game?.currentTeamId === game?.team1.id ? game?.team1.name : game?.team2.name;
 
+  // إنشاء مصفوفة من الأزرار لعرضها
+  const renderButtons = () => {
+    const buttons = [];
+    const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
+    const teams = [1, 2];
+
+    for (const team of teams) {
+      for (const difficulty of difficulties) {
+        // تحديد رقم الزر (من 1 إلى 6)
+        let buttonNumber;
+        if (team === 1) {
+          if (difficulty === DifficultyLevel.EASY) buttonNumber = 1;
+          else if (difficulty === DifficultyLevel.MEDIUM) buttonNumber = 3;
+          else buttonNumber = 5;
+        } else {
+          if (difficulty === DifficultyLevel.EASY) buttonNumber = 2;
+          else if (difficulty === DifficultyLevel.MEDIUM) buttonNumber = 4;
+          else buttonNumber = 6;
+        }
+
+        const isAvailable = isQuestionAvailableForCurrentTeam(difficulty, team);
+        
+        buttons.push(
+          <button 
+            key={`${team}-${difficulty}`}
+            className={`py-3 px-0 rounded-xl text-white font-bold text-lg ${
+              isAvailable
+                ? 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-gray-300 cursor-not-allowed'
+            } transition-all flex items-center justify-center`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isAvailable) {
+                handleSelectDifficulty(difficulty);
+              }
+            }}
+            disabled={!isAvailable}
+          >
+            {getQuestionStatusIcon(difficulty, team)}
+            {buttonNumber}
+          </button>
+        );
+      }
+    }
+
+    return buttons;
+  };
+
   return (
     <motion.div
       className={`category-card rounded-2xl shadow-md overflow-hidden ${isCompleted ? 'opacity-75' : ''}`}
       whileHover={{ y: -5, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.98 }}
-      onClick={!isExpanded ? handleCardClick : undefined}
       layout="position"
     >
       <div 
@@ -275,16 +290,10 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {category.name}
             </h3>
 
-            <div 
-              className={`p-3 rounded-xl ${isCompleted ? 'bg-gray-200' : `bg-${color}-100`}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!isCompleted) setIsExpanded(!isExpanded);
-              }}
-            >
+            <div className={`p-3 rounded-xl ${isCompleted ? 'bg-gray-200' : `bg-${color}-100`}`}>
               {isCompleted ? 
                 <CheckCircle className="h-7 w-7 text-gray-500" /> : 
-                isExpanded ? <ChevronUp className="h-7 w-7" /> : <ChevronDown className="h-7 w-7" />
+                getIcon(iconName)
               }
             </div>
           </div>
@@ -300,86 +309,18 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             </div>
           </div>
 
-          {/* عرض مستويات الصعوبة اعتماداً على حالة التوسعة */}
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4 pt-3"
-              >
-                <div className="text-center mb-4">
-                  <h4 className="text-lg font-bold text-gray-700">اختر مستوى الصعوبة:</h4>
-                </div>
+          {/* عرض الأزرار الستة (الأرقام 1-6) */}
+          <div className="grid grid-cols-3 gap-3 my-3">
+            {renderButtons()}
+          </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <button 
-                    className={`py-3 px-4 rounded-xl text-white font-bold text-lg ${
-                      isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
-                        ? getDifficultyColor(DifficultyLevel.EASY)
-                        : 'bg-gray-300 cursor-not-allowed'
-                    } transition-all flex items-center justify-center`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
-                        handleSelectDifficulty(DifficultyLevel.EASY);
-                      }
-                    }}
-                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
-                  >
-                    {getQuestionStatusIcon(DifficultyLevel.EASY)}
-                    1
-                  </button>
-
-                  <button 
-                    className={`py-3 px-4 rounded-xl text-white font-bold text-lg ${
-                      isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
-                        ? getDifficultyColor(DifficultyLevel.MEDIUM)
-                        : 'bg-gray-300 cursor-not-allowed'
-                    } transition-all flex items-center justify-center`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
-                        handleSelectDifficulty(DifficultyLevel.MEDIUM);
-                      }
-                    }}
-                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
-                  >
-                    {getQuestionStatusIcon(DifficultyLevel.MEDIUM)}
-                    2
-                  </button>
-
-                  <button 
-                    className={`py-3 px-4 rounded-xl text-white font-bold text-lg ${
-                      isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
-                        ? getDifficultyColor(DifficultyLevel.HARD)
-                        : 'bg-gray-300 cursor-not-allowed'
-                    } transition-all flex items-center justify-center`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
-                        handleSelectDifficulty(DifficultyLevel.HARD);
-                      }
-                    }}
-                    disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
-                  >
-                    {getQuestionStatusIcon(DifficultyLevel.HARD)}
-                    3
-                  </button>
-                </div>
-
-                {/* معلومات إضافية عن الفئة */}
-                <div className="mt-4 pt-3 border-t border-gray-200">
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>الأسئلة المتبقية: {remaining.total}/6</span>
-                    {isCompleted && <span className="text-green-500 font-bold">مكتملة ✓</span>}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* معلومات إضافية عن الفئة */}
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>الأسئلة المتبقية: {remaining.total}/6</span>
+              {isCompleted && <span className="text-green-500 font-bold">مكتملة ✓</span>}
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>

@@ -29,9 +29,25 @@ export default function DifficultySelector() {
   
   const availableDifficulties = getAvailableDifficulties();
   
-  const handleBackClick = () => {
-    // العودة إلى اختيار الفئة
-    selectDifficulty('');
+  const handleBackClick = async () => {
+    try {
+      // العودة إلى اختيار الفئة باستخدام API مباشرةً بدلاً من استخدام selectDifficulty
+      if (game) {
+        const result = await fetch(`/api/games/${game.id}/state`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ state: 'category_selection' }),
+        });
+        
+        if (!result.ok) {
+          console.error("فشل العودة إلى اختيار الفئة");
+        }
+      }
+    } catch (error) {
+      console.error("خطأ أثناء العودة إلى اختيار الفئة:", error);
+    }
   };
   
   // الحصول على اسم الفريق الحالي

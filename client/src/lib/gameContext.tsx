@@ -284,8 +284,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!game) return;
     
     try {
+      console.log("بداية اختيار المستوى:", difficulty);
+      
+      // أولاً: تحديث مستوى الصعوبة الحالي
       await apiRequest('PUT', `/api/games/${game.id}/current-difficulty`, { difficulty });
+      console.log("تم تحديث مستوى الصعوبة");
+      
+      // ثانياً: تحديث حالة اللعبة إلى مرحلة السؤال
       await apiRequest('PUT', `/api/games/${game.id}/state`, { state: GameState.QUESTION });
+      console.log("تم تحديث حالة اللعبة إلى:", GameState.QUESTION);
       
       // تسجيل اختيار مستوى الصعوبة
       const category = game.categories.find(c => c.name === game.currentCategory);
@@ -295,9 +302,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
         teamName: getCurrentTeam()?.name
       }, game.currentTeamId, undefined, category?.id);
       
+      // قم بتحديث اللعبة محلياً للتأكد من التغيير الفوري
+      if (game) {
+        setGame({
+          ...game,
+          currentDifficulty: difficulty,
+          state: GameState.QUESTION
+        });
+      }
+      
+      // إظهار رسالة نجاح الاختيار
+      toast({
+        title: "تم اختيار المستوى",
+        description: `تم اختيار المستوى ${difficulty} بنجاح`,
+        variant: "default"
+      });
+      
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار المستوى';
+      console.error("خطأ في اختيار المستوى:", errorMessage);
       setError(errorMessage);
       toast({
         title: "خطأ",

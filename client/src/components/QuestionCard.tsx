@@ -49,9 +49,9 @@ export default function QuestionCard() {
           <div className="bg-primary/10 px-4 py-2 rounded-lg">
             <span className="font-bold text-primary">المستوى: </span>
             <span className="text-gray-700">
-              {game.currentDifficulty === 'easy' ? 'سهل' : 
-               game.currentDifficulty === 'medium' ? 'متوسط' : 
-               game.currentDifficulty === 'hard' ? 'صعب' : 
+              {game.currentDifficulty === 'easy' ? '1' : 
+               game.currentDifficulty === 'medium' ? '2' : 
+               game.currentDifficulty === 'hard' ? '3' : 
                game.currentDifficulty}
             </span>
           </div>
@@ -71,27 +71,9 @@ export default function QuestionCard() {
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
         <div className="mb-8">
-          {question.type === 'text' && (
-            <h2 className="text-3xl text-center font-bold text-gray-800 dark:text-gray-100">
-              {question.text}
-            </h2>
-          )}
-          {question.type === 'image' && (
-            <img src={question.content} alt="سؤال" className="max-w-full mx-auto rounded-lg" />
-          )}
-          {question.type === 'video' && (
-            <video controls className="max-w-full mx-auto rounded-lg">
-              <source src={question.content} type="video/mp4" />
-            </video>
-          )}
-          {question.type === 'audio' && (
-            <audio controls className="w-full">
-              <source src={question.content} type="audio/mpeg" />
-            </audio>
-          )}
-          {question.type === 'qr' && (
-            <img src={question.content} alt="باركود" className="max-w-xs mx-auto" />
-          )}
+          <h2 className="text-3xl text-center font-bold text-gray-800 dark:text-gray-100">
+            {question.text}
+          </h2>
         </div>
 
         {!showAnswerOptions ? (

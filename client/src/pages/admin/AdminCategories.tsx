@@ -102,6 +102,11 @@ export default function AdminCategories() {
   const [editingCategory, setEditingCategory] = useState<CategoryUI | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  
+  // تحديث قيمة المستوى المحدد
+  const handleDifficultyChange = (value: string) => {
+    setSelectedDifficulty(value === 'all' ? null : value);
+  };
 
   // جلب الفئات
   const { data: categories = [], isLoading: isLoadingCategories, error: categoriesError } = useQuery({
@@ -477,7 +482,7 @@ export default function AdminCategories() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">بدون فئة أم</SelectItem>
+                            <SelectItem value="0">بدون فئة أم</SelectItem>
                             {parentCategories.map(category => (
                               <SelectItem key={category.id} value={category.id.toString()}>
                                 {category.nameAr || category.name}
@@ -584,14 +589,14 @@ export default function AdminCategories() {
           />
           
           <Select 
-            value={selectedDifficulty || ''} 
-            onValueChange={(value) => setSelectedDifficulty(value || null)}
+            value={selectedDifficulty || 'all'} 
+            onValueChange={handleDifficultyChange}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="المستوى" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">جميع المستويات</SelectItem>
+              <SelectItem value="all">جميع المستويات</SelectItem>
               <SelectItem value="easy">سهل</SelectItem>
               <SelectItem value="medium">متوسط</SelectItem>
               <SelectItem value="hard">صعب</SelectItem>

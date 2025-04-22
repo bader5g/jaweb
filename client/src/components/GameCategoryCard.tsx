@@ -123,11 +123,15 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const remaining = remainingQuestions();
   const isCompleted = remaining.total === 0;
 
-  // معالجة اختيار السؤال مباشرة - باستخدام الدالة المعرَّفة
+  // معالجة اختيار السؤال مباشرة وتجاوز رسالة النجاح
   const handleSelectQuestion = async () => {
     if (!isCompleted) {
-      await selectCategory(category.name);
-      await selectDifficulty("easy");
+      try {
+        await selectCategory(category.name);
+        await selectDifficulty("easy");
+      } catch (error) {
+        console.error("خطأ في تحديد السؤال:", error);
+      }
     }
   };
 

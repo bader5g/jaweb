@@ -284,11 +284,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!game) return;
     
     try {
-      console.log("بداية اختيار المستوى:", difficulty);
-      
-      // أولاً: تحديث مستوى الصعوبة الحالي - الخادم سيقوم تلقائيًا بتحديث الحالة إلى "question"
       await apiRequest('PUT', `/api/games/${game.id}/current-difficulty`, { difficulty });
-      console.log("تم تحديث مستوى الصعوبة");
       
       // تسجيل اختيار مستوى الصعوبة
       const category = game.categories.find(c => c.name === game.currentCategory);

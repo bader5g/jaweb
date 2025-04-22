@@ -14,8 +14,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-// سنقوم باستيراد هذه المكونات لاحقًا
-// استخدام مكونات مؤقتة للعرض
+// استيراد الصفحات المختلفة للوحة التحكم من الملفات المنفصلة
+import AdminCategories from './AdminCategories';
+import AdminQuestions from './AdminQuestions';
+
+// استخدام مكونات مؤقتة للعرض للأقسام التي لا زالت قيد التطوير
 const TempComponent = ({ title }: { title: string }) => (
   <div className="p-6 border rounded-lg">
     <h3 className="text-lg font-medium mb-2">قسم {title}</h3>
@@ -23,8 +26,8 @@ const TempComponent = ({ title }: { title: string }) => (
   </div>
 )
 
-const AdminCategories = () => <TempComponent title="إدارة الفئات" />;
-const AdminQuestions = () => <TempComponent title="إدارة الأسئلة" />;
+// استيراد أو إنشاء المكونات المؤقتة
+// بعضها قد يكون موجودًا بالفعل، والبعض الآخر سنعمل على إنشائه لاحقًا
 const AdminUsers = () => <TempComponent title="إدارة المستخدمين" />;
 const AdminSettings = () => <TempComponent title="إعدادات النظام" />;
 const AdminHelp = () => <TempComponent title="وسائل المساعدة" />;
@@ -35,29 +38,14 @@ export default function AdminDashboard() {
   const { user, logoutMutation } = useAuth();
   const [activeSection, setActiveSection] = useState<string>('categories');
   
-  // التحقق إذا كان المستخدم مسؤولًا 
-  // سنقوم بتعطيل هذه الدالة مؤقتًا لتسهيل التطوير
-  /*
-  React.useEffect(() => {
-    // إذا كان المستخدم غير مسجل دخول أو ليس مسؤولًا، قم بتوجيهه إلى صفحة الرئيسية
-    if (!user || (user && user.role !== 'admin' && user.role !== 'super_admin')) {
-      setLocation('/');
-    }
-  }, [user, setLocation]);
-  */
+  // تم تعطيل التحقق من الصلاحيات مؤقتًا لتسهيل التطوير
 
   const handleLogout = () => {
     logoutMutation.mutate();
     setLocation('/');
   };
 
-  /* سنقوم بتعطيل هذا الشرط مؤقتًا لتسهيل التطوير
-  if (!user) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <p className="text-xl">جاري التحميل...</p>
-    </div>;
-  }
-  */
+  // تم تعطيل شرط التحقق من وجود المستخدم مؤقتًا لتسهيل التطوير
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row rtl">

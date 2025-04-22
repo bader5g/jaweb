@@ -26,8 +26,8 @@ function Router() {
           <ProtectedRoute path="/setup" component={GameSetup} />
           <ProtectedRoute path="/play" component={GamePlay} />
           <ProtectedRoute path="/questions" component={Questions} />
-          <ProtectedRoute path="/admin" component={AdminDashboard} />
-          <ProtectedRoute path="/admin/categories" component={AdminCategories} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/categories" component={AdminCategories} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>

@@ -8,6 +8,7 @@ import {
   Cpu, Film, Music, Utensils, Calculator, CheckCircle,
   ChevronDown, ChevronUp, Check, X, HelpCircle, Star
 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface GameCategoryCardProps {
   category: Category;
@@ -16,6 +17,7 @@ interface GameCategoryCardProps {
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
@@ -162,15 +164,52 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   };
 
   // معالجة اختيار المستوى
-  const handleSelectDifficulty = async (difficulty: string) => {
-    if (!isCompleted) {
-      // أولاً: اختيار الفئة
-      const categorySuccess = await selectCategory(category.name);
-      if (categorySuccess) {
-        // ثانياً: اختيار مستوى الصعوبة
-        await selectDifficulty(difficulty);
-        // ملاحظة: لا نحتاج إلى التنقل خارج الصفحة لأن حالة اللعبة ستتغير تلقائياً وستظهر شاشة السؤال
+  const handleSelectDifficulty = async (difficultyLevel: string) => {
+    try {
+      if (!isCompleted) {
+        console.log("هنحاول نختار الفئة:", category.name);
+        // أولاً: اختيار الفئة
+        const categorySuccess = await selectCategory(category.name);
+        console.log("نتيجة اختيار الفئة:", categorySuccess);
+        
+        if (categorySuccess) {
+          console.log("هنحاول نختار المستوى:", difficultyLevel);
+          // ثانياً: اختيار مستوى الصعوبة
+          try {
+            const difficultySuccess = await selectDifficulty(difficultyLevel);
+            console.log("نتيجة اختيار المستوى:", difficultySuccess);
+            
+            if (!difficultySuccess) {
+              toast({
+                title: "تعذر اختيار المستوى",
+                description: "حدث خطأ أثناء محاولة اختيار مستوى الصعوبة. يرجى المحاولة مرة أخرى.",
+                variant: "destructive"
+              });
+            }
+            // ملاحظة: لا نحتاج إلى التنقل خارج الصفحة لأن حالة اللعبة ستتغير تلقائياً وستظهر شاشة السؤال
+          } catch (difficultyError) {
+            console.error("خطأ في اختيار المستوى:", difficultyError);
+            toast({
+              title: "خطأ في اختيار المستوى",
+              description: difficultyError instanceof Error ? difficultyError.message : "حدث خطأ غير متوقع",
+              variant: "destructive"
+            });
+          }
+        } else {
+          toast({
+            title: "تعذر اختيار الفئة",
+            description: "حدث خطأ أثناء محاولة اختيار الفئة. يرجى المحاولة مرة أخرى.",
+            variant: "destructive"
+          });
+        }
       }
+    } catch (error) {
+      console.error("خطأ في اختيار الفئة:", error);
+      toast({
+        title: "خطأ في اختيار الفئة",
+        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
+        variant: "destructive"
+      });
     }
   };
 

@@ -125,22 +125,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
 
   // معالجة اختيار السؤال مباشرة - باستخدام الدالة المعرَّفة
   const handleSelectQuestion = async () => {
-    try {
-      if (!isCompleted) {
-        // اختيار الفئة والذهاب مباشرة للسؤال
-        const categorySuccess = await selectCategory(category.name);
-        if (categorySuccess) {
-          // تعيين المستوى الافتراضي كسهل
-          await selectDifficulty("easy");
-        }
-      }
-    } catch (error) {
-      console.error("خطأ في العملية:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تحميل السؤال",
-        variant: "destructive"
-      });
+    if (!isCompleted) {
+      await selectCategory(category.name);
+      await selectDifficulty("easy");
     }
   };
 

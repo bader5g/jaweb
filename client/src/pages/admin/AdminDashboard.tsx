@@ -52,7 +52,7 @@ export default function AdminDashboard() {
   };
 
   /* سنقوم بتعطيل هذا الشرط مؤقتًا لتسهيل التطوير
-  if (!user || (user && user.role !== 'admin' && user.role !== 'super_admin')) {
+  if (!user) {
     return <div className="flex items-center justify-center min-h-screen">
       <p className="text-xl">جاري التحميل...</p>
     </div>;

@@ -164,10 +164,10 @@ export default function Navbar() {
             </div>
           </Link>
           {user && (
-            <Link href="/admin/categories">
+            <Link href="/admin">
               <div className="flex items-center gap-1 text-white/90 hover:text-white transition-colors duration-200">
                 <Award className="h-4 w-4" />
-                <span>إدارة التصنيفات</span>
+                <span>لوحة التحكم</span>
               </div>
             </Link>
           )}
@@ -212,10 +212,10 @@ export default function Navbar() {
               </div>
             </Link>
             {user && (
-              <Link href="/admin/categories" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/admin" onClick={() => setIsMenuOpen(false)}>
                 <div className="flex items-center gap-2 text-white py-2">
                   <Award className="h-5 w-5" />
-                  <span className="text-lg">إدارة التصنيفات</span>
+                  <span className="text-lg">لوحة التحكم</span>
                 </div>
               </Link>
             )}

@@ -123,58 +123,37 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const remaining = remainingQuestions();
   const isCompleted = remaining.total === 0;
 
-  // معالجة اختيار السؤال مباشرة
+  // معالجة اختيار السؤال مباشرة - باستخدام الدالة المعرَّفة
   const handleSelectQuestion = async (difficultyLevel: string) => {
     try {
       if (!isCompleted) {
-        console.log("سيتم اختيار الفئة:", category.name);
+        console.log("سيتم اختيار الفئة والمستوى مباشرة:", category.name, difficultyLevel);
         toast({
           title: "جاري تحميل السؤال",
           description: `من فئة ${category.name}`,
         });
 
-        // أولاً: اختيار الفئة مباشرة وتعيين الحالة إلى QUESTION بدلاً من DIFFICULTY_SELECTION
-        // هذا يتجاوز خطوة اختيار مستوى الصعوبة
-
-        try {
-          // اختيار الفئة
-          if (!game) return;
+        // أولاً: اختيار الفئة
+        const categorySuccess = await selectCategory(category.name);
+        console.log("نتيجة اختيار الفئة:", categorySuccess);
+        
+        if (categorySuccess) {
+          // ثانياً: اختيار المستوى والذهاب مباشرة للسؤال
+          console.log("سيتم اختيار المستوى:", difficultyLevel);
+          const difficultySuccess = await selectDifficulty(difficultyLevel);
+          console.log("نتيجة اختيار المستوى:", difficultySuccess);
           
-          // تعيين الفئة الحالية
-          await apiRequest('PUT', `/api/games/${game.id}/current-category`, { category: category.name });
-          
-          // اختيار المستوى مباشرة (تعيين المستوى وتحديث الحالة إلى QUESTION)
-          await apiRequest('PUT', `/api/games/${game.id}/current-difficulty`, { difficulty: difficultyLevel });
-          
-          // تسجيل اختيار الفئة
-          const categoryObj = game.categories.find(c => c.name === category.name);
-          await apiRequest('POST', `/api/games/${game.id}/logs`, {
-            action: 'select_category_and_difficulty',
-            details: {
-              categoryName: category.name,
-              difficulty: difficultyLevel,
-              teamName: game.currentTeamId === game.team1.id ? game.team1.name : game.team2.name
-            },
-            teamId: game.currentTeamId,
-            categoryId: categoryObj?.id
-          });
-          
-          // تحديث حالة اللعبة محلياً
-          const gameUpdate: Game = {
-            ...game,
-            currentCategory: category.name,
-            currentDifficulty: difficultyLevel,
-            state: GameState.QUESTION
-          };
-          
-          // تحديث حالة اللعبة
-          setGame?.(gameUpdate);
-          
-        } catch (error) {
-          console.error("خطأ في العملية:", error);
+          if (!difficultySuccess) {
+            toast({
+              title: "تعذر اختيار المستوى",
+              description: "حدث خطأ أثناء محاولة اختيار المستوى. يرجى المحاولة مرة أخرى.",
+              variant: "destructive"
+            });
+          }
+        } else {
           toast({
-            title: "خطأ في العملية",
-            description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
+            title: "تعذر اختيار الفئة",
+            description: "حدث خطأ أثناء محاولة اختيار الفئة. يرجى المحاولة مرة أخرى.",
             variant: "destructive"
           });
         }

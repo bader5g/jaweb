@@ -92,18 +92,19 @@ export default function TeamHelpOptions({ teamId, gameId }: TeamHelpOptionsProps
   };
   
   return (
-    <div className="flex flex-wrap gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-3 mt-2">
       {Object.values(HELP_TYPES).map((helpType) => (
         <button
           key={helpType}
           onClick={() => useHelp(helpType)}
           disabled={usedHelps[helpType] || !isActive}
           className={`
-            flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+            flex flex-col items-center justify-center gap-2 p-3 rounded-full text-xs font-medium transition-all
+            transform hover:scale-105 hover:shadow-lg
             ${usedHelps[helpType]
               ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
               : isActive
-                ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
                 : 'bg-gray-100 text-gray-500 cursor-not-allowed'
             }
           `}

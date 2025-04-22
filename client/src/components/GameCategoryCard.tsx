@@ -136,13 +136,13 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
         // أولاً: اختيار الفئة
         const categorySuccess = await selectCategory(category.name);
         console.log("نتيجة اختيار الفئة:", categorySuccess);
-        
+
         if (categorySuccess) {
           // ثانياً: اختيار المستوى والذهاب مباشرة للسؤال
           console.log("سيتم اختيار المستوى:", difficultyLevel);
           const difficultySuccess = await selectDifficulty(difficultyLevel);
           console.log("نتيجة اختيار المستوى:", difficultySuccess);
-          
+
           if (!difficultySuccess) {
             toast({
               title: "تعذر اختيار المستوى",
@@ -169,55 +169,36 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   };
 
   // التحقق مما إذا كان السؤال متاحاً للفريق الحالي
-  const isQuestionAvailableForCurrentTeam = (difficulty: string, teamNumber: number): boolean => {
+  const isQuestionAvailableForCurrentTeam = (teamNumber: number): boolean => {
     if (!game) return false;
 
     const currentTeamId = game.currentTeamId;
     const teamKey = teamNumber === 1 ? 'team1' : 'team2';
     const isCurrentTeam = (teamNumber === 1 && currentTeamId === game.team1.id) || 
                           (teamNumber === 2 && currentTeamId === game.team2.id);
-    
+
     if (!isCurrentTeam) return false;
 
-    let questions;
-    if (difficulty === DifficultyLevel.EASY) {
-      questions = questionsByDifficulty.easy[teamKey];
-    } else if (difficulty === DifficultyLevel.MEDIUM) {
-      questions = questionsByDifficulty.medium[teamKey];
-    } else if (difficulty === DifficultyLevel.HARD) {
-      questions = questionsByDifficulty.hard[teamKey];
-    } else {
-      return false;
-    }
-
+    //Simplified logic to check for available questions regardless of difficulty
+    const questions = questionsByDifficulty.easy[teamKey].concat(questionsByDifficulty.medium[teamKey], questionsByDifficulty.hard[teamKey]);
     return questions.some(q => !q.isAnswered);
   };
 
   // الحصول على أيقونة حالة السؤال
-  const getQuestionStatusIcon = (difficulty: string, teamNumber: number) => {
+  const getQuestionStatusIcon = (teamNumber: number) => {
     const teamKey = teamNumber === 1 ? 'team1' : 'team2';
-    
-    let questions;
-    if (difficulty === DifficultyLevel.EASY) {
-      questions = questionsByDifficulty.easy[teamKey];
-    } else if (difficulty === DifficultyLevel.MEDIUM) {
-      questions = questionsByDifficulty.medium[teamKey];
-    } else if (difficulty === DifficultyLevel.HARD) {
-      questions = questionsByDifficulty.hard[teamKey];
-    } else {
-      return <HelpCircle className="h-4 w-4 text-gray-400" />;
-    }
+    const questions = questionsByDifficulty.easy[teamKey].concat(questionsByDifficulty.medium[teamKey], questionsByDifficulty.hard[teamKey]);
 
     if (!questions || questions.length === 0) {
       return <HelpCircle className="h-4 w-4 text-gray-400" />;
     }
 
-    const question = questions[0];
-    if (!question.isAnswered) {
-      return null; // لا حاجة لأيقونة
+    const question = questions.find(q => !q.isAnswered); //Find the first unanswered question
+    if (!question) {
+      return <Check className="h-4 w-4 text-white mr-1" />;
     }
 
-    return <Check className="h-4 w-4 text-white mr-1" />;
+    return null; // لا حاجة لأيقونة
   };
 
   const currentTeamName = game?.currentTeamId === game?.team1.id ? game?.team1.name : game?.team2.name;
@@ -225,28 +206,17 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   // إنشاء مصفوفة من الأزرار لعرضها
   const renderButtons = () => {
     const buttons = [];
-    const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
     const teams = [1, 2];
 
     for (const team of teams) {
-      for (const difficulty of difficulties) {
-        // تحديد رقم الزر (من 1 إلى 6)
-        let buttonNumber;
-        if (team === 1) {
-          if (difficulty === DifficultyLevel.EASY) buttonNumber = 1;
-          else if (difficulty === DifficultyLevel.MEDIUM) buttonNumber = 3;
-          else buttonNumber = 5;
-        } else {
-          if (difficulty === DifficultyLevel.EASY) buttonNumber = 2;
-          else if (difficulty === DifficultyLevel.MEDIUM) buttonNumber = 4;
-          else buttonNumber = 6;
-        }
+      // إنشاء 3 أزرار لكل فريق
+      for (let i = 1; i <= 3; i++) {
+        const buttonNumber = team === 1 ? i : i + 3;
+        const isAvailable = isQuestionAvailableForCurrentTeam(team);
 
-        const isAvailable = isQuestionAvailableForCurrentTeam(difficulty, team);
-        
         buttons.push(
           <button 
-            key={`${team}-${difficulty}`}
+            key={`${team}-${i}`}
             className={`py-3 px-0 rounded-xl text-white font-bold text-lg ${
               isAvailable
                 ? 'bg-blue-600 hover:bg-blue-700'
@@ -255,12 +225,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             onClick={(e) => {
               e.stopPropagation();
               if (isAvailable) {
-                handleSelectQuestion(difficulty);
+                handleSelectQuestion(team.toString());
               }
             }}
             disabled={!isAvailable}
           >
-            {getQuestionStatusIcon(difficulty, team)}
+            {getQuestionStatusIcon(team)}
             {buttonNumber}
           </button>
         );

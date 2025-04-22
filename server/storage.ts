@@ -563,13 +563,64 @@ export class DatabaseStorage implements IStorage {
     const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
     const points = { [DifficultyLevel.EASY]: 10, [DifficultyLevel.MEDIUM]: 20, [DifficultyLevel.HARD]: 30 };
 
+    // قائمة من الأسئلة العشوائية لكل فئة
+    const questionBank = {
+      1: { // الرياضيات
+        easy: [
+          { q: "كم يساوي 5 × 7؟", a: "35" },
+          { q: "ما هو ناتج جمع 15 و 28؟", a: "43" }
+        ],
+        medium: [
+          { q: "ما هو الجذر التربيعي لـ 144؟", a: "12" },
+          { q: "كم يساوي 3 مرفوع للقوة 4؟", a: "81" }
+        ],
+        hard: [
+          { q: "احسب مساحة دائرة نصف قطرها 7 سم", a: "153.94 سم مربع" },
+          { q: "ما هو ناتج 15% من 480؟", a: "72" }
+        ]
+      },
+      2: { // العلوم
+        easy: [
+          { q: "ما هو أكبر كوكب في النظام الشمسي؟", a: "المشتري" },
+          { q: "ما هي المادة التي تتكون منها معظم الخلايا الحية؟", a: "الماء" }
+        ],
+        medium: [
+          { q: "ما هو العنصر الكيميائي الأكثر وفرة في القشرة الأرضية؟", a: "الأكسجين" },
+          { q: "كم عدد العظام في جسم الإنسان البالغ؟", a: "206" }
+        ],
+        hard: [
+          { q: "ما هو قانون نيوتن الثاني للحركة؟", a: "القوة تساوي الكتلة مضروبة في التسارع" },
+          { q: "ما هو الفرق بين الخلية النباتية والخلية الحيوانية؟", a: "الخلية النباتية تحتوي على جدار خلوي وبلاستيدات خضراء" }
+        ]
+      },
+      3: { // الجغرافيا
+        easy: [
+          { q: "ما هي أكبر قارة في العالم؟", a: "آسيا" },
+          { q: "ما هي عاصمة المملكة العربية السعودية؟", a: "الرياض" }
+        ],
+        medium: [
+          { q: "ما هو أعمق محيط في العالم؟", a: "المحيط الهادئ" },
+          { q: "كم عدد القارات في العالم؟", a: "7" }
+        ],
+        hard: [
+          { q: "ما هو أطول نهر في العالم؟", a: "نهر النيل" },
+          { q: "ما هي أكبر صحراء في العالم؟", a: "الصحراء الكبرى" }
+        ]
+      }
+    };
+
     // توزيع الأسئلة بالتساوي بين الفريقين - 3 أسئلة لكل فريق
     [1, 2].forEach(teamId => {
       difficulties.forEach(difficulty => {
+        const bank = questionBank[categoryId as keyof typeof questionBank]?.[difficulty] || [
+          { q: `سؤال ${difficulty} للفئة ${categoryId}`, a: `إجابة السؤال` }
+        ];
+        const randomQ = bank[Math.floor(Math.random() * bank.length)];
+        
         const currentQuestion = {
           id: questions.length + 1,
-          text: `سؤال ${difficulty} (${questions.length + 1}) للفريق ${teamId}`,
-          answer: `إجابة السؤال ${questions.length + 1}`,
+          text: randomQ.q,
+          answer: randomQ.a,
           difficulty,
           points: points[difficulty],
           categoryId,

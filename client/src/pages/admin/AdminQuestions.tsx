@@ -88,8 +88,14 @@ export default function AdminQuestions() {
   const { data: questions = [], isLoading: isLoadingQuestions, error: questionsError } = useQuery({
     queryKey: ['/api/admin/questions'],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/admin/questions');
-      return response.json() as Promise<QuestionType[]>;
+      try {
+        const response = await apiRequest('GET', '/api/admin/questions');
+        return response.json() as Promise<QuestionType[]>;
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        // إرجاع مصفوفة فارغة في حالة حدوث خطأ
+        return [];
+      }
     }
   });
 

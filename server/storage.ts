@@ -27,6 +27,11 @@ export interface IStorage {
   updateTeamScore(teamId: number, score: number): Promise<Team | undefined>;
   
   // Question operations
+  getAllQuestions(): Promise<Question[]>;
+  getQuestionById(id: number): Promise<Question | undefined>;
+  createQuestion(questionData: any): Promise<Question>;
+  updateQuestion(id: number, questionData: any): Promise<Question | undefined>;
+  deleteQuestion(id: number): Promise<boolean>;
   markQuestionAnswered(questionId: number): Promise<Question | undefined>;
   getQuestionsByCategory(categoryId: number): Promise<Question[]>;
   
@@ -423,6 +428,100 @@ export class DatabaseStorage implements IStorage {
       return updatedQuestion;
     } catch (error) {
       console.error('Error marking question as answered:', error);
+      throw error;
+    }
+  }
+
+  // جلب جميع الأسئلة
+  async getAllQuestions(): Promise<Question[]> {
+    try {
+      const allQuestions = await db.select().from(questions);
+      return allQuestions;
+    } catch (error) {
+      console.error('Error fetching all questions:', error);
+      throw error;
+    }
+  }
+  
+  // جلب سؤال بواسطة المعرف
+  async getQuestionById(id: number): Promise<Question | undefined> {
+    try {
+      const [question] = await db
+        .select()
+        .from(questions)
+        .where(eq(questions.id, id));
+      return question;
+    } catch (error) {
+      console.error(`Error fetching question with id ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  // إنشاء سؤال جديد
+  async createQuestion(questionData: any): Promise<Question> {
+    try {
+      const [newQuestion] = await db
+        .insert(questions)
+        .values({
+          text: questionData.text,
+          answer: questionData.answer,
+          difficulty: questionData.difficulty,
+          categoryId: questionData.categoryId,
+          isActive: questionData.isActive !== undefined ? questionData.isActive : true,
+          mediaType: questionData.mediaType || '',
+          mediaUrl: questionData.mediaUrl || null,
+          points: questionData.points || 1,
+          isAnswered: false,
+          gameId: '',
+          teamId: null,
+          explanation: questionData.explanation || null,
+          createdAt: new Date()
+        })
+        .returning();
+      return newQuestion;
+    } catch (error) {
+      console.error('Error creating new question:', error);
+      throw error;
+    }
+  }
+  
+  // تحديث سؤال موجود
+  async updateQuestion(id: number, questionData: any): Promise<Question | undefined> {
+    try {
+      const [updatedQuestion] = await db
+        .update(questions)
+        .set({
+          text: questionData.text,
+          answer: questionData.answer,
+          difficulty: questionData.difficulty,
+          categoryId: questionData.categoryId,
+          isActive: questionData.isActive,
+          mediaType: questionData.mediaType || '',
+          mediaUrl: questionData.mediaUrl || null,
+          points: questionData.points
+          // لا نقوم بتحديث gameId أو isAnswered أو teamId هنا
+          // لأنها تستخدم في سياق اللعبة نفسها وليس في الإدارة
+        })
+        .where(eq(questions.id, id))
+        .returning();
+      return updatedQuestion;
+    } catch (error) {
+      console.error(`Error updating question with id ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  // حذف سؤال
+  async deleteQuestion(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(questions)
+        .where(eq(questions.id, id))
+        .returning({ id: questions.id });
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting question with id ${id}:`, error);
       throw error;
     }
   }

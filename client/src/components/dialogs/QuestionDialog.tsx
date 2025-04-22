@@ -22,7 +22,7 @@ interface QuestionDialogProps {
     text: string;
     answer: string;
     difficulty: string;
-    categoryId: number;
+    categoryId: number | null;
     isActive: boolean;
     mediaType?: string;
     mediaUrl?: string;
@@ -103,7 +103,7 @@ export default function QuestionDialog({ isOpen, onClose, question, isEdit = fal
     text: question.text,
     answer: question.answer,
     difficulty: question.difficulty,
-    categoryId: question.categoryId.toString(),
+    categoryId: question.categoryId ? question.categoryId.toString() : '',
     isActive: question.isActive,
     mediaType: question.mediaType || '',
     mediaUrl: question.mediaUrl || '',

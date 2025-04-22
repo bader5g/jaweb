@@ -1,48 +1,36 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { CategoryUI } from '@shared/schema';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Save, RefreshCw, ImagePlus, Music, Video, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { MediaType } from '@shared/schema';
+import { DifficultyLevel, MediaType } from '@shared/schema';
+import { apiRequest } from '@/lib/queryClient';
+import { Loader2 } from 'lucide-react';
 
-// نموذج بيانات السؤال
+// مخطط نموذج السؤال
 const questionFormSchema = z.object({
-  text: z.string().min(5, { message: 'نص السؤال يجب أن يكون 5 أحرف على الأقل' }),
+  text: z.string().min(3, { message: 'يجب أن يكون نص السؤال 3 أحرف على الأقل' }),
   answer: z.string().min(1, { message: 'الإجابة مطلوبة' }),
-  difficulty: z.string().default('medium'),
-  categoryId: z.string().min(1, { message: 'الرجاء اختيار فئة' }),
+  difficulty: z.string().refine(val => ['easy', 'medium', 'hard'].includes(val), {
+    message: 'يرجى اختيار مستوى صعوبة صحيح'
+  }),
+  categoryId: z.string().min(1, { message: 'يرجى اختيار الفئة' }),
   isActive: z.boolean().default(true),
   mediaType: z.string().optional(),
-  mediaUrl: z.string().optional(),
-  points: z.number().int().positive().default(1),
+  mediaUrl: z.string().optional().nullable(),
+  points: z.number().int().min(1, { message: 'يجب أن تكون النقاط 1 على الأقل' }).default(1),
 });
 
+// نوع قيم نموذج السؤال
 export type QuestionFormValues = z.infer<typeof questionFormSchema>;
 
+// خصائص مكون نموذج السؤال
 interface QuestionFormProps {
   defaultValues?: Partial<QuestionFormValues>;
   onSubmit: (values: QuestionFormValues) => void;
@@ -50,55 +38,75 @@ interface QuestionFormProps {
 }
 
 export default function QuestionForm({ defaultValues, onSubmit, isSubmitting }: QuestionFormProps) {
-  // جلب الفئات
+  // استدعاء API للحصول على قائمة الفئات
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['/api/admin/categories'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/categories');
-      return response.json() as Promise<CategoryUI[]>;
+      return response.json();
     }
   });
 
-  // نموذج إضافة/تعديل سؤال
+  // إعداد نموذج React Hook Form مع التحقق من صحة Zod
   const form = useForm<QuestionFormValues>({
     resolver: zodResolver(questionFormSchema),
     defaultValues: {
       text: '',
       answer: '',
-      difficulty: 'medium',
+      difficulty: 'easy',
       categoryId: '',
       isActive: true,
       mediaType: '',
       mediaUrl: '',
       points: 1,
       ...defaultValues,
-    },
+    }
   });
 
-  useEffect(() => {
-    if (defaultValues) {
-      form.reset(defaultValues);
-    }
-  }, [defaultValues, form]);
-
-  // استمع للتغييرات في نوع الوسائط
+  // استخراج قيمة نوع الوسائط الحالية
   const mediaType = form.watch('mediaType');
+
+  // معالجة تقديم النموذج
+  const handleSubmit = (values: QuestionFormValues) => {
+    onSubmit(values);
+  };
+
+  // الحصول على ترجمة مستوى الصعوبة
+  const getDifficultyLabel = (difficulty: string): string => {
+    switch (difficulty) {
+      case 'easy': return 'سهل';
+      case 'medium': return 'متوسط';
+      case 'hard': return 'صعب';
+      default: return difficulty;
+    }
+  };
+
+  // الحصول على ترجمة نوع الوسائط
+  const getMediaTypeLabel = (type: string): string => {
+    switch (type) {
+      case MediaType.IMAGE: return 'صورة';
+      case MediaType.AUDIO: return 'ملف صوتي';
+      case MediaType.VIDEO: return 'فيديو';
+      default: return 'بدون وسائط';
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            {/* نص السؤال */}
             <FormField
               control={form.control}
               name="text"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>نص السؤال</FormLabel>
+                  <FormLabel>نص السؤال *</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="أدخل نص السؤال هنا..."
-                      className="min-h-[120px] resize-y"
+                      placeholder="أدخل نص السؤال هنا"
+                      className="min-h-[120px]"
                       {...field}
                     />
                   </FormControl>
@@ -107,12 +115,13 @@ export default function QuestionForm({ defaultValues, onSubmit, isSubmitting }: 
               )}
             />
 
+            {/* الإجابة */}
             <FormField
               control={form.control}
               name="answer"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الإجابة</FormLabel>
+                  <FormLabel>الإجابة *</FormLabel>
                   <FormControl>
                     <Input placeholder="أدخل الإجابة الصحيحة" {...field} />
                   </FormControl>
@@ -121,214 +130,167 @@ export default function QuestionForm({ defaultValues, onSubmit, isSubmitting }: 
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="difficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>مستوى الصعوبة</FormLabel>
-                    <Select 
-                      value={field.value} 
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المستوى" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="easy">سهل</SelectItem>
-                        <SelectItem value="medium">متوسط</SelectItem>
-                        <SelectItem value="hard">صعب</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="points"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>النقاط</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min={1} 
-                        max={10}
-                        {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 1)}
-                        value={field.value}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      نقاط هذا السؤال (1-10)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            {/* الفئة */}
             <FormField
               control={form.control}
               name="categoryId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الفئة</FormLabel>
-                  <Select 
-                    value={field.value} 
-                    onValueChange={field.onChange}
+                  <FormLabel>الفئة *</FormLabel>
+                  <Select
                     disabled={isLoadingCategories}
+                    onValueChange={field.onChange}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر فئة السؤال" />
+                        <SelectValue placeholder="اختر الفئة" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map(category => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
+                      {categories.map((category: any) => (
+                        <SelectItem 
+                          key={category.id} 
+                          value={category.id.toString()}
+                        >
                           {category.nameAr || category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="mediaType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>نوع الوسائط</FormLabel>
-                  <Select 
-                    value={field.value || ""} 
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="بدون وسائط" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">بدون وسائط</SelectItem>
-                      <SelectItem value={MediaType.IMAGE}>صورة</SelectItem>
-                      <SelectItem value={MediaType.AUDIO}>صوت</SelectItem>
-                      <SelectItem value={MediaType.VIDEO}>فيديو</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormDescription>
-                    اختر نوع الوسائط إذا كان السؤال يتضمن صورة أو صوت أو فيديو
+                    اختر الفئة التي ينتمي إليها هذا السؤال
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {mediaType && (
+            {/* مستوى الصعوبة */}
+            <FormField
+              control={form.control}
+              name="difficulty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>مستوى الصعوبة *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر مستوى الصعوبة" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(DifficultyLevel).map((difficulty) => (
+                        <SelectItem key={difficulty} value={difficulty}>
+                          {getDifficultyLabel(difficulty)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    حدد مستوى صعوبة السؤال
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="space-y-6">
+            {/* نوع الوسائط */}
+            <FormField
+              control={form.control}
+              name="mediaType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>نوع الوسائط</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ''}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع الوسائط" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">بدون وسائط</SelectItem>
+                      <SelectItem value={MediaType.IMAGE}>صورة</SelectItem>
+                      <SelectItem value={MediaType.AUDIO}>ملف صوتي</SelectItem>
+                      <SelectItem value={MediaType.VIDEO}>فيديو</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    اختر نوع الوسائط المرفقة بالسؤال (اختياري)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* رابط الوسائط */}
+            {mediaType && mediaType !== '' && (
               <FormField
                 control={form.control}
                 name="mediaUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>رابط {mediaType === MediaType.IMAGE ? 'الصورة' : mediaType === MediaType.AUDIO ? 'الصوت' : 'الفيديو'}</FormLabel>
+                    <FormLabel>رابط الوسائط</FormLabel>
                     <FormControl>
-                      <div className="flex gap-2">
-                        <Input 
-                          placeholder={`أدخل رابط ${mediaType === MediaType.IMAGE ? 'الصورة' : mediaType === MediaType.AUDIO ? 'الصوت' : 'الفيديو'}`} 
-                          {...field} 
-                        />
-                        <Button 
-                          type="button" 
-                          variant="outline"
-                          onClick={() => {
-                            field.onChange("");
-                            form.setValue("mediaType", "");
-                          }}
-                          size="icon"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Input 
+                        placeholder={`أدخل رابط ${getMediaTypeLabel(mediaType)}`} 
+                        {...field} 
+                        value={field.value || ''}
+                      />
                     </FormControl>
+                    <FormDescription>
+                      أدخل رابط مباشر للوسائط المرفقة
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             )}
 
-            {mediaType && form.watch('mediaUrl') && (
-              <Card className="border-dashed border-2">
-                <CardContent className="p-4 flex justify-center items-center min-h-[200px]">
-                  {mediaType === MediaType.IMAGE ? (
-                    form.watch('mediaUrl') ? (
-                      <img 
-                        src={form.watch('mediaUrl')} 
-                        alt="معاينة الصورة" 
-                        className="max-h-[200px] object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=خطأ+في+الصورة';
-                        }}
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center text-muted-foreground">
-                        <ImagePlus className="h-12 w-12 mb-2" />
-                        <p>معاينة الصورة</p>
-                      </div>
-                    )
-                  ) : mediaType === MediaType.AUDIO ? (
-                    form.watch('mediaUrl') ? (
-                      <audio 
-                        controls 
-                        src={form.watch('mediaUrl')}
-                        className="w-full"
-                      >
-                        متصفحك لا يدعم تشغيل الصوت
-                      </audio>
-                    ) : (
-                      <div className="flex flex-col items-center text-muted-foreground">
-                        <Music className="h-12 w-12 mb-2" />
-                        <p>معاينة الصوت</p>
-                      </div>
-                    )
-                  ) : mediaType === MediaType.VIDEO ? (
-                    form.watch('mediaUrl') ? (
-                      <video 
-                        controls 
-                        src={form.watch('mediaUrl')}
-                        className="max-h-[200px]"
-                      >
-                        متصفحك لا يدعم تشغيل الفيديو
-                      </video>
-                    ) : (
-                      <div className="flex flex-col items-center text-muted-foreground">
-                        <Video className="h-12 w-12 mb-2" />
-                        <p>معاينة الفيديو</p>
-                      </div>
-                    )
-                  ) : null}
-                </CardContent>
-              </Card>
-            )}
+            {/* النقاط */}
+            <FormField
+              control={form.control}
+              name="points"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>النقاط</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min={1}
+                      placeholder="عدد النقاط" 
+                      {...field}
+                      onChange={event => field.onChange(
+                        event.target.value === '' ? 0 : parseInt(event.target.value, 10)
+                      )}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    عدد النقاط التي يحصل عليها اللاعب عند الإجابة الصحيحة
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            {/* نشط/غير نشط */}
             <FormField
               control={form.control}
               name="isActive"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
                   <div className="space-y-0.5">
-                    <FormLabel>الحالة</FormLabel>
+                    <FormLabel>حالة السؤال</FormLabel>
                     <FormDescription>
-                      تحديد ما إذا كان السؤال متاح للاستخدام
+                      هل السؤال نشط ويمكن استخدامه في الألعاب؟
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -343,19 +305,11 @@ export default function QuestionForm({ defaultValues, onSubmit, isSubmitting }: 
           </div>
         </div>
 
+        {/* أزرار التحكم */}
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <RefreshCw className="ml-2 h-4 w-4 animate-spin" />
-                جاري الحفظ...
-              </>
-            ) : (
-              <>
-                <Save className="ml-2 h-4 w-4" />
-                حفظ السؤال
-              </>
-            )}
+            {isSubmitting && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+            {defaultValues ? 'حفظ التغييرات' : 'إضافة السؤال'}
           </Button>
         </div>
       </form>

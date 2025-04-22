@@ -390,7 +390,17 @@ export default function AdminQuestions() {
                             عرض التفاصيل
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
-                            setEditingQuestion(question);
+                            setEditingQuestion({
+                              id: question.id,
+                              text: question.text,
+                              answer: question.answer,
+                              difficulty: question.difficulty,
+                              categoryId: question.categoryId,
+                              isActive: question.isActive,
+                              mediaType: question.mediaType,
+                              mediaUrl: question.mediaUrl || undefined,
+                              points: question.points
+                            });
                             setIsQuestionDialogOpen(true);
                           }}>
                             <Pencil className="h-4 w-4 ml-2" />
@@ -507,7 +517,17 @@ export default function AdminQuestions() {
                             variant="ghost"
                             size="icon"
                             onClick={() => {
-                              setEditingQuestion(question);
+                              setEditingQuestion({
+                                id: question.id,
+                                text: question.text,
+                                answer: question.answer,
+                                difficulty: question.difficulty,
+                                categoryId: question.categoryId,
+                                isActive: question.isActive,
+                                mediaType: question.mediaType,
+                                mediaUrl: question.mediaUrl || undefined,
+                                points: question.points
+                              });
                               setIsQuestionDialogOpen(true);
                             }}
                           >
@@ -559,7 +579,7 @@ export default function AdminQuestions() {
             </DialogHeader>
             
             {(() => {
-              const question = questions.find(q => q.id === showDetails);
+              const question = showDetails ? questions.find(q => q.id === showDetails) : null;
               if (!question) return null;
               
               return (
@@ -630,7 +650,17 @@ export default function AdminQuestions() {
                     </Button>
                     <div className="flex gap-2">
                       <Button variant="outline" onClick={() => {
-                        setEditingQuestion(question);
+                        setEditingQuestion({
+                          id: question.id,
+                          text: question.text,
+                          answer: question.answer,
+                          difficulty: question.difficulty,
+                          categoryId: question.categoryId,
+                          isActive: question.isActive,
+                          mediaType: question.mediaType,
+                          mediaUrl: question.mediaUrl || undefined,
+                          points: question.points
+                        });
                         setIsQuestionDialogOpen(true);
                         setShowDetails(null);
                       }}>

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from "@/lib/gameContext";
-import { Category, Question, DifficultyLevel } from "@/lib/types";
+import { Category, Question, DifficultyLevel, Game, GameState } from "@/lib/types";
 import { motion } from 'framer-motion';
+import { apiRequest } from "@/lib/queryClient";
 import { 
   BookOpen, Atom, Globe, BookText, Trophy, Palette, 
   Cpu, Film, Music, Utensils, Calculator, CheckCircle,
@@ -122,8 +123,8 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const remaining = remainingQuestions();
   const isCompleted = remaining.total === 0;
 
-  // معالجة اختيار المستوى
-  const handleSelectDifficulty = async (difficultyLevel: string) => {
+  // معالجة اختيار السؤال مباشرة
+  const handleSelectQuestion = async (difficultyLevel: string) => {
     try {
       if (!isCompleted) {
         console.log("سيتم اختيار الفئة:", category.name);
@@ -132,27 +133,48 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
           description: `من فئة ${category.name}`,
         });
 
-        // أولاً: اختيار الفئة
-        const categorySuccess = await selectCategory(category.name);
-        console.log("نتيجة اختيار الفئة:", categorySuccess);
-        
-        if (categorySuccess) {
-          console.log("سيتم اختيار المستوى:", difficultyLevel);
-          // ثانياً: اختيار مستوى الصعوبة
-          const difficultySuccess = await selectDifficulty(difficultyLevel);
-          console.log("نتيجة اختيار المستوى:", difficultySuccess);
+        // أولاً: اختيار الفئة مباشرة وتعيين الحالة إلى QUESTION بدلاً من DIFFICULTY_SELECTION
+        // هذا يتجاوز خطوة اختيار مستوى الصعوبة
+
+        try {
+          // اختيار الفئة
+          if (!game) return;
           
-          if (!difficultySuccess) {
-            toast({
-              title: "تعذر اختيار المستوى",
-              description: "حدث خطأ أثناء محاولة اختيار مستوى الصعوبة. يرجى المحاولة مرة أخرى.",
-              variant: "destructive"
-            });
-          }
-        } else {
+          // تعيين الفئة الحالية
+          await apiRequest('PUT', `/api/games/${game.id}/current-category`, { category: category.name });
+          
+          // اختيار المستوى مباشرة (تعيين المستوى وتحديث الحالة إلى QUESTION)
+          await apiRequest('PUT', `/api/games/${game.id}/current-difficulty`, { difficulty: difficultyLevel });
+          
+          // تسجيل اختيار الفئة
+          const categoryObj = game.categories.find(c => c.name === category.name);
+          await apiRequest('POST', `/api/games/${game.id}/logs`, {
+            action: 'select_category_and_difficulty',
+            details: {
+              categoryName: category.name,
+              difficulty: difficultyLevel,
+              teamName: game.currentTeamId === game.team1.id ? game.team1.name : game.team2.name
+            },
+            teamId: game.currentTeamId,
+            categoryId: categoryObj?.id
+          });
+          
+          // تحديث حالة اللعبة محلياً
+          const gameUpdate: Game = {
+            ...game,
+            currentCategory: category.name,
+            currentDifficulty: difficultyLevel,
+            state: GameState.QUESTION
+          };
+          
+          // تحديث حالة اللعبة
+          setGame?.(gameUpdate);
+          
+        } catch (error) {
+          console.error("خطأ في العملية:", error);
           toast({
-            title: "تعذر اختيار الفئة",
-            description: "حدث خطأ أثناء محاولة اختيار الفئة. يرجى المحاولة مرة أخرى.",
+            title: "خطأ في العملية",
+            description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
             variant: "destructive"
           });
         }
@@ -254,7 +276,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             onClick={(e) => {
               e.stopPropagation();
               if (isAvailable) {
-                handleSelectDifficulty(difficulty);
+                handleSelectQuestion(difficulty);
               }
             }}
             disabled={!isAvailable}

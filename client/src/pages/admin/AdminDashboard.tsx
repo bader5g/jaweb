@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, Route, Switch } from 'wouter';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import {
   LayoutGrid, 
@@ -14,15 +14,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import AdminCategories from './AdminCategories';
-import AdminQuestions from './AdminQuestions';
-import AdminUsers from './AdminUsers';
-import AdminSettings from './AdminSettings';
-import AdminHelp from './AdminHelp';
-import AdminDesign from './AdminDesign';
+// سنقوم باستيراد هذه المكونات لاحقًا
+// استخدام مكونات مؤقتة للعرض
+const TempComponent = ({ title }: { title: string }) => (
+  <div className="p-6 border rounded-lg">
+    <h3 className="text-lg font-medium mb-2">قسم {title}</h3>
+    <p>هذا القسم قيد التطوير</p>
+  </div>
+)
+
+const AdminCategories = () => <TempComponent title="إدارة الفئات" />;
+const AdminQuestions = () => <TempComponent title="إدارة الأسئلة" />;
+const AdminUsers = () => <TempComponent title="إدارة المستخدمين" />;
+const AdminSettings = () => <TempComponent title="إعدادات النظام" />;
+const AdminHelp = () => <TempComponent title="وسائل المساعدة" />;
+const AdminDesign = () => <TempComponent title="تخصيص التصميم" />;
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const { user, logoutMutation } = useAuth();
   const [activeSection, setActiveSection] = useState<string>('categories');
   
@@ -30,13 +39,13 @@ export default function AdminDashboard() {
   React.useEffect(() => {
     // إذا كان المستخدم غير مسجل دخول أو ليس مسؤولًا، قم بتوجيهه إلى صفحة الرئيسية
     if (!user || (user && user.role !== 'admin' && user.role !== 'super_admin')) {
-      navigate('/');
+      setLocation('/');
     }
-  }, [user, navigate]);
+  }, [user, setLocation]);
 
   const handleLogout = () => {
     logoutMutation.mutate();
-    navigate('/');
+    setLocation('/');
   };
 
   if (!user || (user && user.role !== 'admin' && user.role !== 'super_admin')) {

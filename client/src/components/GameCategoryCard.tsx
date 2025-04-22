@@ -296,7 +296,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {/* أيقونات المستوى 1 */}
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <button
-                  onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
+                  onClick={() => {
+                    if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
+                      selectCategory(category.name);
+                      selectDifficulty(DifficultyLevel.EASY);
+                    }
+                  }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
                   className={`py-3 px-4 rounded-xl text-white font-medium ${
                     isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
@@ -309,7 +314,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                 </button>
 
                 <button
-                  onClick={() => handleSelectDifficulty(DifficultyLevel.EASY)}
+                  onClick={() => {
+                    if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
+                      selectCategory(category.name);
+                      selectDifficulty(DifficultyLevel.EASY);
+                    }
+                  }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
                   className={`py-3 px-4 rounded-xl text-white font-medium ${
                     isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)
@@ -325,7 +335,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {/* أيقونات المستوى 2 */}
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <button
-                  onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
+                  onClick={() => {
+                    if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
+                      selectCategory(category.name);
+                      selectDifficulty(DifficultyLevel.MEDIUM);
+                    }
+                  }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
                   className={`py-3 px-4 rounded-xl text-white font-medium ${
                     isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
@@ -338,7 +353,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                 </button>
 
                 <button
-                  onClick={() => handleSelectDifficulty(DifficultyLevel.MEDIUM)}
+                  onClick={() => {
+                    if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
+                      selectCategory(category.name);
+                      selectDifficulty(DifficultyLevel.MEDIUM);
+                    }
+                  }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
                   className={`py-3 px-4 rounded-xl text-white font-medium ${
                     isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)
@@ -354,7 +374,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {/* أيقونات المستوى 3 */}
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
+                  onClick={() => {
+                    if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
+                      selectCategory(category.name);
+                      selectDifficulty(DifficultyLevel.HARD);
+                    }
+                  }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
                   className={`py-3 px-4 rounded-xl text-white font-medium ${
                     isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)
@@ -367,7 +392,12 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                 </button>
 
                 <button
-                  onClick={() => handleSelectDifficulty(DifficultyLevel.HARD)}
+                  onClick={() => {
+                    if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
+                      selectCategory(category.name);
+                      selectDifficulty(DifficultyLevel.HARD);
+                    }
+                  }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
                   className={`py-3 px-4 rounded-xl text-white font-medium ${
                     isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)

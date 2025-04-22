@@ -303,12 +303,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
       }
       
-      // إظهار رسالة نجاح الاختيار
-      toast({
-        title: "تم اختيار المستوى",
-        description: `تم اختيار المستوى ${difficulty} بنجاح`,
-        variant: "default"
-      });
+      // تم إلغاء رسالة نجاح الاختيار حسب طلب المستخدم
       
       return true;
     } catch (err) {

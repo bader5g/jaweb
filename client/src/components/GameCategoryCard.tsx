@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
 import { useGame } from "@/lib/gameContext";
 import { Category, Question, DifficultyLevel } from "@/lib/types";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +14,6 @@ interface GameCategoryCardProps {
 
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
-  const [, navigate] = useLocation(); // Assuming you are using a navigation library like React Navigation
 
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
@@ -293,6 +291,23 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
 
           {/* عرض أسئلة الفئة - دائماً ظاهرة */}
           <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="mb-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                {getIcon(iconName)}
+                <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+              </div>
+            </div>
+            
+            {/* عرض دور الفريق الحالي - في الأعلى */}
+            <div className="p-3 bg-primary-50 rounded-xl mb-4 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <Star className="h-5 w-5 text-primary animate-pulse" />
+                <p className="font-bold text-gray-800">
+                  دور الفريق: <span className="text-primary">{currentTeamName}</span>
+                </p>
+                <Star className="h-5 w-5 text-primary animate-pulse" />
+              </div>
+            </div>
 
             <div className="space-y-3">
               {/* أيقونات المستوى 1 */}
@@ -302,7 +317,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
                       await selectCategory(category.name);
                       await selectDifficulty(DifficultyLevel.EASY);
-                      navigate('/question');
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
@@ -321,7 +335,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
                       await selectCategory(category.name);
                       await selectDifficulty(DifficultyLevel.EASY);
-                      navigate('/question');
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
@@ -343,7 +356,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
                       await selectCategory(category.name);
                       await selectDifficulty(DifficultyLevel.MEDIUM);
-                      navigate('/question');
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
@@ -362,7 +374,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
                       await selectCategory(category.name);
                       await selectDifficulty(DifficultyLevel.MEDIUM);
-                      navigate('/question');
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
@@ -384,7 +395,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
                       await selectCategory(category.name);
                       await selectDifficulty(DifficultyLevel.HARD);
-                      navigate('/question');
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
@@ -403,7 +413,6 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
                       await selectCategory(category.name);
                       await selectDifficulty(DifficultyLevel.HARD);
-                      navigate('/question');
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}

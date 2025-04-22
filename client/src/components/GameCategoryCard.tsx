@@ -168,11 +168,8 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
       const categorySuccess = await selectCategory(category.name);
       if (categorySuccess) {
         // ثانياً: اختيار مستوى الصعوبة
-        const difficultySuccess = await selectDifficulty(difficulty);
-        if (difficultySuccess) {
-          // توجيه المستخدم إلى صفحة السؤال
-          navigate('/question');
-        }
+        await selectDifficulty(difficulty);
+        // ملاحظة: لا نحتاج إلى التنقل خارج الصفحة لأن حالة اللعبة ستتغير تلقائياً وستظهر شاشة السؤال
       }
     }
   };

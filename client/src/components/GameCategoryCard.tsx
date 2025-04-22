@@ -124,45 +124,21 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const isCompleted = remaining.total === 0;
 
   // معالجة اختيار السؤال مباشرة - باستخدام الدالة المعرَّفة
-  const handleSelectQuestion = async (difficultyLevel: string) => {
+  const handleSelectQuestion = async () => {
     try {
       if (!isCompleted) {
-        console.log("سيتم اختيار الفئة والمستوى مباشرة:", category.name, difficultyLevel);
-        toast({
-          title: "جاري تحميل السؤال",
-          description: `من فئة ${category.name}`,
-        });
-
-        // أولاً: اختيار الفئة
+        // اختيار الفئة والذهاب مباشرة للسؤال
         const categorySuccess = await selectCategory(category.name);
-        console.log("نتيجة اختيار الفئة:", categorySuccess);
-
         if (categorySuccess) {
-          // ثانياً: اختيار المستوى والذهاب مباشرة للسؤال
-          console.log("سيتم اختيار المستوى:", difficultyLevel);
-          const difficultySuccess = await selectDifficulty(difficultyLevel);
-          console.log("نتيجة اختيار المستوى:", difficultySuccess);
-
-          if (!difficultySuccess) {
-            toast({
-              title: "تعذر اختيار المستوى",
-              description: "حدث خطأ أثناء محاولة اختيار المستوى. يرجى المحاولة مرة أخرى.",
-              variant: "destructive"
-            });
-          }
-        } else {
-          toast({
-            title: "تعذر اختيار الفئة",
-            description: "حدث خطأ أثناء محاولة اختيار الفئة. يرجى المحاولة مرة أخرى.",
-            variant: "destructive"
-          });
+          // تعيين المستوى الافتراضي كسهل
+          await selectDifficulty("easy");
         }
       }
     } catch (error) {
       console.error("خطأ في العملية:", error);
       toast({
-        title: "خطأ في العملية",
-        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحميل السؤال",
         variant: "destructive"
       });
     }
@@ -225,7 +201,7 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
             onClick={(e) => {
               e.stopPropagation();
               if (isAvailable) {
-                handleSelectQuestion(team.toString());
+                handleSelectQuestion();
               }
             }}
             disabled={!isAvailable}

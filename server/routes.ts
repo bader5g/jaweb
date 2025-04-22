@@ -115,6 +115,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "حدث خطأ أثناء البحث عن التصنيفات" });
     }
   });
+  
+  // Admin API Routes
+  
+  // الحصول على التصنيفات للوحة التحكم
+  app.get('/api/admin/categories', async (_req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء البحث عن التصنيفات" });
+    }
+  });
+  
+  // الحصول على الأسئلة للوحة التحكم
+  app.get('/api/admin/questions', async (_req, res) => {
+    try {
+      // نستخدم مؤقتًا مصفوفة فارغة حتى يتم تنفيذ الدالة الفعلية
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء البحث عن الأسئلة" });
+    }
+  });
+  
+  // الحصول على المستخدمين للوحة التحكم
+  app.get('/api/admin/users', async (_req, res) => {
+    try {
+      // نستخدم مؤقتًا مصفوفة فارغة حتى يتم تنفيذ الدالة الفعلية
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء البحث عن المستخدمين" });
+    }
+  });
 
   app.post('/api/games', async (req, res) => {
     try {

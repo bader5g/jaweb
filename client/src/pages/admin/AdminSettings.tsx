@@ -1,32 +1,12 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { Settings, Save, Plus, Edit, Trash2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Settings as SettingsIcon, Save, Clock, Gift, Timer } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
@@ -34,401 +14,335 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-// نموذج الإعدادات
-const settingSchema = z.object({
-  key: z.string().min(1, { message: 'المفتاح مطلوب' }),
-  value: z.string().min(1, { message: 'القيمة مطلوبة' }),
-  description: z.string().optional(),
-  group: z.string().min(1, { message: 'المجموعة مطلوبة' }),
-  dataType: z.string().min(1, { message: 'نوع البيانات مطلوب' }),
-  isPublic: z.boolean().default(true)
-});
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminSettings() {
-  const { toast } = useToast();
-  const [isAddSettingOpen, setIsAddSettingOpen] = useState(false);
-  const [editingSetting, setEditingSetting] = useState<any | null>(null);
-  const [selectedTab, setSelectedTab] = useState('game');
-
-  // جلب الإعدادات
-  const { data: settings = [], isLoading, error } = useQuery({
-    queryKey: ['/api/admin/settings'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/admin/settings');
-      return response.json();
-    }
-  });
-
-  // إعداد نموذج
-  const form = useForm<z.infer<typeof settingSchema>>({
-    resolver: zodResolver(settingSchema),
-    defaultValues: {
-      key: '',
-      value: '',
-      description: '',
-      group: 'game',
-      dataType: 'string',
-      isPublic: true
-    }
-  });
-
-  // تحديث النموذج عند تعديل إعداد موجود
-  React.useEffect(() => {
-    if (editingSetting) {
-      form.reset({
-        key: editingSetting.key,
-        value: editingSetting.value,
-        description: editingSetting.description || '',
-        group: editingSetting.group,
-        dataType: editingSetting.dataType,
-        isPublic: editingSetting.isPublic
-      });
-    } else {
-      form.reset({
-        key: '',
-        value: '',
-        description: '',
-        group: 'game',
-        dataType: 'string',
-        isPublic: true
-      });
-    }
-  }, [editingSetting, form]);
-
-  // تقديم النموذج
-  const onSubmit = (values: z.infer<typeof settingSchema>) => {
-    toast({
-      title: 'تنبيه',
-      description: 'هذه الميزة قيد التطوير',
-    });
-    setIsAddSettingOpen(false);
+  const [activeTab, setActiveTab] = useState('general');
+  
+  // حالة الإعدادات العامة
+  const [gameName, setGameName] = useState('جاوب');
+  const [welcomeMessage, setWelcomeMessage] = useState('مرحبًا بك في لعبة جاوب!');
+  const [defaultAnswerTime, setDefaultAnswerTime] = useState(30);
+  const [minCategoryCount, setMinCategoryCount] = useState(4);
+  const [maxCategoryCount, setMaxCategoryCount] = useState(8);
+  
+  // حالة إعدادات المكافآت
+  const [pointsPerWin, setPointsPerWin] = useState(10);
+  const [pointsPerCorrectAnswer, setPointsPerCorrectAnswer] = useState(5);
+  const [bonusPointsEasy, setBonusPointsEasy] = useState(1);
+  const [bonusPointsMedium, setBonusPointsMedium] = useState(2);
+  const [bonusPointsHard, setBonusPointsHard] = useState(3);
+  
+  // حالة إعدادات أخرى
+  const [enableHelpSystem, setEnableHelpSystem] = useState(true);
+  const [enableLeaderboard, setEnableLeaderboard] = useState(true);
+  const [moderateQuestions, setModerateQuestions] = useState(true);
+  const [allowAiGeneration, setAllowAiGeneration] = useState(true);
+  
+  const handleSaveSettings = () => {
+    // هنا سيتم حفظ الإعدادات في قاعدة البيانات
+    // حاليًا نقوم فقط بإظهار رسالة بالنجاح
+    alert('تم حفظ الإعدادات بنجاح!');
   };
-
-  // تصفية الإعدادات حسب المجموعة
-  const filteredSettings = settings.filter((setting: any) => setting.group === selectedTab);
-
-  // فحص نوع البيانات وإظهار القيمة بالشكل المناسب
-  const renderValue = (setting: any) => {
-    switch (setting.dataType) {
-      case 'boolean':
-        return setting.value === 'true' ? 'نعم' : 'لا';
-      case 'number':
-        return setting.value;
-      case 'json':
-        try {
-          const jsonObj = JSON.parse(setting.value);
-          return <code>{JSON.stringify(jsonObj, null, 2)}</code>;
-        } catch {
-          return setting.value;
-        }
-      default:
-        return setting.value;
-    }
-  };
-
-  // في حالة وجود خطأ
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>خطأ</AlertTitle>
+  
+  return (
+    <div className="space-y-6">
+      <Alert className="bg-yellow-50 text-yellow-900 border-yellow-200">
+        <SettingsIcon className="h-4 w-4" />
+        <AlertTitle>ملاحظة</AlertTitle>
         <AlertDescription>
-          حدث خطأ أثناء تحميل الإعدادات. الرجاء المحاولة مرة أخرى.
+          هذه الصفحة قيد التطوير. تغييرات الإعدادات لن يتم حفظها حاليًا.
         </AlertDescription>
       </Alert>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <Button onClick={() => setIsAddSettingOpen(true)}>
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة إعداد جديد
-        </Button>
-      </div>
-
-      <Tabs defaultValue="game" value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="game">إعدادات اللعبة</TabsTrigger>
-          <TabsTrigger value="theme">إعدادات المظهر</TabsTrigger>
-          <TabsTrigger value="help_options">وسائل المساعدة</TabsTrigger>
-          <TabsTrigger value="system">إعدادات النظام</TabsTrigger>
+      
+      <Tabs defaultValue="general" onValueChange={setActiveTab} value={activeTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="general">إعدادات عامة</TabsTrigger>
+          <TabsTrigger value="rewards">نظام المكافآت</TabsTrigger>
+          <TabsTrigger value="other">إعدادات أخرى</TabsTrigger>
         </TabsList>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Settings className="ml-2 h-5 w-5" />
-              <span>
-                {selectedTab === 'game' && 'إعدادات اللعبة'}
-                {selectedTab === 'theme' && 'إعدادات المظهر'}
-                {selectedTab === 'help_options' && 'إعدادات وسائل المساعدة'}
-                {selectedTab === 'system' && 'إعدادات النظام'}
-              </span>
-            </CardTitle>
-            <CardDescription>
-              {selectedTab === 'game' && 'تخصيص إعدادات اللعبة مثل وقت الإجابة وعدد الفئات'}
-              {selectedTab === 'theme' && 'تخصيص مظهر التطبيق بما في ذلك الألوان والخطوط'}
-              {selectedTab === 'help_options' && 'تكوين وسائل المساعدة المتاحة للفرق أثناء اللعب'}
-              {selectedTab === 'system' && 'إعدادات متقدمة للنظام'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">جاري التحميل...</div>
-            ) : filteredSettings.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                لم يتم العثور على إعدادات في هذه المجموعة
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>المفتاح</TableHead>
-                      <TableHead>القيمة</TableHead>
-                      <TableHead>الوصف</TableHead>
-                      <TableHead>نوع البيانات</TableHead>
-                      <TableHead>عام</TableHead>
-                      <TableHead className="text-left w-[100px]">الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredSettings.map((setting: any) => (
-                      <TableRow key={setting.id}>
-                        <TableCell className="font-medium">{setting.key}</TableCell>
-                        <TableCell>{renderValue(setting)}</TableCell>
-                        <TableCell>{setting.description}</TableCell>
-                        <TableCell>{setting.dataType}</TableCell>
-                        <TableCell>{setting.isPublic ? 'نعم' : 'لا'}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setEditingSetting(setting);
-                                setIsAddSettingOpen(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-red-500"
-                              onClick={() => {
-                                toast({
-                                  title: 'تنبيه',
-                                  description: 'هذه الميزة قيد التطوير',
-                                });
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <p className="text-sm text-muted-foreground">
-              يتم تطبيق الإعدادات فورًا بعد الحفظ
-            </p>
-            <Button
-              variant="outline" 
-              onClick={() => {
-                toast({
-                  title: 'تنبيه',
-                  description: 'هذه الميزة قيد التطوير',
-                });
-              }}
-            >
-              <Save className="ml-2 h-4 w-4" />
-              استعادة الإعدادات الافتراضية
-            </Button>
-          </CardFooter>
-        </Card>
-      </Tabs>
-
-      {/* نافذة إضافة/تعديل إعداد */}
-      <Dialog open={isAddSettingOpen} onOpenChange={setIsAddSettingOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{editingSetting ? 'تعديل إعداد' : 'إضافة إعداد جديد'}</DialogTitle>
-            <DialogDescription>
-              {editingSetting ? 'قم بتعديل بيانات الإعداد' : 'أدخل بيانات الإعداد الجديد'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="key"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>المفتاح</FormLabel>
-                      <FormControl>
-                        <Input placeholder="مفتاح الإعداد" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        مفتاح فريد للإعداد (مثال: default_answer_time)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>القيمة</FormLabel>
-                      <FormControl>
-                        <Input placeholder="قيمة الإعداد" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+        
+        <TabsContent value="general" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>الإعدادات العامة</CardTitle>
+              <CardDescription>
+                تحكم في الإعدادات الأساسية للتطبيق
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="gameName">اسم اللعبة</Label>
+                <Input 
+                  id="gameName" 
+                  value={gameName} 
+                  onChange={e => setGameName(e.target.value)} 
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>الوصف</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="وصف الإعداد" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+              
+              <div className="space-y-2">
+                <Label htmlFor="welcomeMessage">رسالة الترحيب</Label>
+                <Input 
+                  id="welcomeMessage" 
+                  value={welcomeMessage} 
+                  onChange={e => setWelcomeMessage(e.target.value)} 
+                />
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="group"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>المجموعة</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختر المجموعة" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="game">إعدادات اللعبة</SelectItem>
-                          <SelectItem value="theme">إعدادات المظهر</SelectItem>
-                          <SelectItem value="help_options">وسائل المساعدة</SelectItem>
-                          <SelectItem value="system">إعدادات النظام</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="dataType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>نوع البيانات</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختر نوع البيانات" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="string">نص</SelectItem>
-                          <SelectItem value="number">رقم</SelectItem>
-                          <SelectItem value="boolean">منطقي (نعم/لا)</SelectItem>
-                          <SelectItem value="json">JSON</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="isPublic"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          عام
-                        </FormLabel>
-                        <FormDescription>
-                          هل هذا الإعداد متاح للعرض العام؟
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
+                <div className="space-y-2">
+                  <Label htmlFor="defaultAnswerTime">وقت الإجابة الافتراضي (ثانية)</Label>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <Timer className="h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="defaultAnswerTime" 
+                      type="number" 
+                      min={5} 
+                      max={120} 
+                      value={defaultAnswerTime} 
+                      onChange={e => setDefaultAnswerTime(parseInt(e.target.value) || 30)} 
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="minCategoryCount">الحد الأدنى للفئات</Label>
+                  <Input 
+                    id="minCategoryCount" 
+                    type="number" 
+                    min={1} 
+                    max={20} 
+                    value={minCategoryCount} 
+                    onChange={e => setMinCategoryCount(parseInt(e.target.value) || 4)} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="maxCategoryCount">الحد الأقصى للفئات</Label>
+                  <Input 
+                    id="maxCategoryCount" 
+                    type="number" 
+                    min={1} 
+                    max={20} 
+                    value={maxCategoryCount} 
+                    onChange={e => setMaxCategoryCount(parseInt(e.target.value) || 8)} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>خيارات وقت الإجابة (ثانية)</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm">15</Button>
+                  <Button variant="outline" size="sm">30</Button>
+                  <Button variant="outline" size="sm">60</Button>
+                  <Button variant="outline" size="sm">90</Button>
+                  <Button variant="outline" size="sm">
+                    <Clock className="h-4 w-4 mr-1" />
+                    إضافة
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveSettings}>
+                <Save className="mr-2 h-4 w-4" />
+                حفظ الإعدادات
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="rewards" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>نظام المكافآت والنقاط</CardTitle>
+              <CardDescription>
+                تحكم في طريقة احتساب النقاط والمكافآت للمستخدمين
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pointsPerWin">نقاط الفوز بالمباراة</Label>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <Gift className="h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="pointsPerWin" 
+                    type="number" 
+                    min={0} 
+                    value={pointsPerWin} 
+                    onChange={e => setPointsPerWin(parseInt(e.target.value) || 0)} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="pointsPerCorrectAnswer">نقاط الإجابة الصحيحة</Label>
+                <Input 
+                  id="pointsPerCorrectAnswer" 
+                  type="number" 
+                  min={0} 
+                  value={pointsPerCorrectAnswer} 
+                  onChange={e => setPointsPerCorrectAnswer(parseInt(e.target.value) || 0)} 
                 />
               </div>
-
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setEditingSetting(null);
-                    setIsAddSettingOpen(false);
-                  }}
-                >
-                  إلغاء
-                </Button>
-                <Button type="submit">
-                  {editingSetting ? 'حفظ التغييرات' : 'إضافة الإعداد'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+              
+              <Separator className="my-4" />
+              
+              <div className="space-y-2">
+                <Label className="text-base">نقاط إضافية حسب المستوى</Label>
+                <p className="text-sm text-muted-foreground">
+                  نقاط إضافية تُمنح حسب مستوى صعوبة السؤال
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bonusPointsEasy">المستوى السهل</Label>
+                  <Input 
+                    id="bonusPointsEasy" 
+                    type="number" 
+                    min={0} 
+                    value={bonusPointsEasy} 
+                    onChange={e => setBonusPointsEasy(parseInt(e.target.value) || 0)} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bonusPointsMedium">المستوى المتوسط</Label>
+                  <Input 
+                    id="bonusPointsMedium" 
+                    type="number" 
+                    min={0} 
+                    value={bonusPointsMedium} 
+                    onChange={e => setBonusPointsMedium(parseInt(e.target.value) || 0)} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bonusPointsHard">المستوى الصعب</Label>
+                  <Input 
+                    id="bonusPointsHard" 
+                    type="number" 
+                    min={0} 
+                    value={bonusPointsHard} 
+                    onChange={e => setBonusPointsHard(parseInt(e.target.value) || 0)} 
+                  />
+                </div>
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div className="space-y-2">
+                <Label className="text-base">متطلبات الترقية</Label>
+                <p className="text-sm text-muted-foreground">
+                  النقاط المطلوبة للترقية إلى المستويات المختلفة
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>المستوى الفضي</Label>
+                  <Input type="number" min={0} defaultValue={100} />
+                </div>
+                <div className="space-y-2">
+                  <Label>المستوى الذهبي</Label>
+                  <Input type="number" min={0} defaultValue={300} />
+                </div>
+                <div className="space-y-2">
+                  <Label>المستوى البلاتيني</Label>
+                  <Input type="number" min={0} defaultValue={1000} />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveSettings}>
+                <Save className="mr-2 h-4 w-4" />
+                حفظ الإعدادات
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="other" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>إعدادات أخرى</CardTitle>
+              <CardDescription>
+                إعدادات إضافية للتطبيق
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between space-y-2">
+                <Label htmlFor="enableHelpSystem">تمكين نظام المساعدة</Label>
+                <Switch
+                  id="enableHelpSystem"
+                  checked={enableHelpSystem}
+                  onCheckedChange={setEnableHelpSystem}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between space-y-2">
+                <Label htmlFor="enableLeaderboard">تمكين لوحة المتصدرين</Label>
+                <Switch
+                  id="enableLeaderboard"
+                  checked={enableLeaderboard}
+                  onCheckedChange={setEnableLeaderboard}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between space-y-2">
+                <Label htmlFor="moderateQuestions">مراجعة الأسئلة قبل النشر</Label>
+                <Switch
+                  id="moderateQuestions"
+                  checked={moderateQuestions}
+                  onCheckedChange={setModerateQuestions}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between space-y-2">
+                <Label htmlFor="allowAiGeneration">السماح بتوليد أسئلة بالذكاء الاصطناعي</Label>
+                <Switch
+                  id="allowAiGeneration"
+                  checked={allowAiGeneration}
+                  onCheckedChange={setAllowAiGeneration}
+                />
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div className="space-y-2">
+                <Label htmlFor="defaultLocale">اللغة الافتراضية</Label>
+                <Select defaultValue="ar">
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="اختر اللغة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="en">الإنجليزية</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cacheDuration">مدة تخزين البيانات المؤقتة (بالدقائق)</Label>
+                <Input
+                  id="cacheDuration"
+                  type="number"
+                  min={0}
+                  defaultValue={60}
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveSettings}>
+                <Save className="mr-2 h-4 w-4" />
+                حفظ الإعدادات
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

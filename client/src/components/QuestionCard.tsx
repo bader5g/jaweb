@@ -3,16 +3,51 @@ import { useGame } from "@/lib/gameContext";
 import { Button } from "@/components/ui/button";
 import AnswerTimer from "@/components/AnswerTimer";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QuestionCard() {
   const { game, getCurrentQuestion, answerQuestion, updateTeamScore } = useGame();
   const [showAnswerOptions, setShowAnswerOptions] = useState(false);
   const [timerRunning, setTimerRunning] = useState(true);
+  const { toast } = useToast();
 
-  if (!game) return null;
+  console.log("تحميل مكون QuestionCard، حالة اللعبة:", game?.state);
 
+  useEffect(() => {
+    console.log("وصلنا إلى مكون عرض السؤال، حالة اللعبة:", game?.state);
+    
+    // تحقق من أن اللعبة في وضع السؤال
+    if (game && game.state !== "question") {
+      console.log("حالة اللعبة ليست 'question'، الحالة الحالية:", game.state);
+    }
+  }, [game?.state]);
+
+  // التحقق من وجود بيانات اللعبة
+  if (!game) {
+    console.log("لا توجد بيانات لعبة!");
+    return null;
+  }
+
+  // الحصول على السؤال الحالي
   const question = getCurrentQuestion();
-  if (!question) return null;
+  console.log("السؤال الحالي:", question);
+  
+  if (!question) {
+    console.log("لا يوجد سؤال متاح لهذه الفئة والمستوى والفريق الحالي!");
+    
+    toast({
+      title: "لا يوجد سؤال",
+      description: "لا يوجد سؤال متاح لهذه الفئة والمستوى والفريق الحالي",
+      variant: "destructive"
+    });
+    
+    return (
+      <div className="text-center p-10 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+        <h2 className="text-xl font-bold text-red-600 mb-4">لا يوجد سؤال متاح!</h2>
+        <p className="text-gray-600 mb-6">لا يوجد سؤال متاح لـ {game.currentCategory} بمستوى {game.currentDifficulty}</p>
+      </div>
+    );
+  }
 
   const handleShowAnswer = () => {
     setShowAnswerOptions(true);
@@ -21,18 +56,23 @@ export default function QuestionCard() {
 
   const handleTeamAnswer = (teamId: number | null) => {
     if (teamId) {
+      console.log("إجابة صحيحة للفريق:", teamId);
       answerQuestion(question.id, true);
       updateTeamScore(teamId, question.points);
     } else {
+      console.log("إجابة خاطئة - لا أحد حصل على نقاط");
       answerQuestion(question.id, false);
     }
   };
 
   const handleTimeEnd = () => {
+    console.log("انتهى الوقت!");
     setShowAnswerOptions(true);
   };
 
+  // إعادة ضبط حالة المكون عند تغير السؤال
   useEffect(() => {
+    console.log("تغير السؤال:", question?.id);
     setTimerRunning(true);
     setShowAnswerOptions(false);
   }, [question?.id]);

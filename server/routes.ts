@@ -233,19 +233,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { difficulty } = schema.parse(req.body);
       console.log(`[DEBUG] المستوى المطلوب: ${difficulty}`);
       
-      const game = await storage.updateCurrentDifficulty(gameId, difficulty);
+      // أولاً: تحديث مستوى الصعوبة
+      let game = await storage.updateCurrentDifficulty(gameId, difficulty);
       
       if (!game) {
         console.log(`[ERROR] اللعبة غير موجودة: ${gameId}`);
         return res.status(404).json({ error: 'Game not found' });
       }
       
-      console.log(`[DEBUG] تم تحديث حالة اللعبة إلى: ${game.state}`);
-      console.log(`[DEBUG] المستوى الحالي: ${game.currentDifficulty}`);
+      console.log(`[DEBUG] تم تحديث مستوى الصعوبة إلى: ${game.currentDifficulty}`);
       
-      broadcastGame(gameId, game);
-      res.json(game);
-      console.log(`[DEBUG] تم إرسال استجابة ناجحة لتحديث المستوى`);
+      // ثانياً: تحديث حالة اللعبة مباشرة إلى وضع السؤال بعد اختيار المستوى
+      if (difficulty && difficulty !== '') {
+        console.log(`[DEBUG] تغيير حالة اللعبة إلى question`);
+        
+        game = await storage.updateGameState(gameId, 'question');
+        
+        if (game) {
+          console.log(`[DEBUG] تم تحديث حالة اللعبة بنجاح إلى: ${game.state}`);
+        } else {
+          console.log(`[ERROR] فشل تحديث حالة اللعبة`);
+        }
+      }
+      
+      // بث التحديثات للعملاء المتصلين
+      if (game) {
+        broadcastGame(gameId, game);
+        res.json(game);
+        console.log(`[DEBUG] تم إرسال استجابة ناجحة لتحديث المستوى والحالة`);
+      } else {
+        res.status(500).json({ error: 'حدث خطأ أثناء تحديث حالة اللعبة' });
+      }
     } catch (error) {
       console.error(`[ERROR] خطأ في تحديث مستوى الصعوبة:`, error);
       res.status(400).json({ error: (error as Error).message });

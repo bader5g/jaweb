@@ -40,6 +40,28 @@ export default function QuestionCard() {
   return (
     <div className="space-y-6">
       <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <div className="bg-primary/10 px-4 py-2 rounded-lg">
+            <span className="font-bold text-primary">التصنيف: </span>
+            <span className="text-gray-700">{game.currentCategory}</span>
+          </div>
+          
+          <div className="bg-primary/10 px-4 py-2 rounded-lg">
+            <span className="font-bold text-primary">المستوى: </span>
+            <span className="text-gray-700">
+              {game.currentDifficulty === 'easy' ? 'سهل' : 
+               game.currentDifficulty === 'medium' ? 'متوسط' : 
+               game.currentDifficulty === 'hard' ? 'صعب' : 
+               game.currentDifficulty}
+            </span>
+          </div>
+          
+          <div className="bg-primary/10 px-4 py-2 rounded-lg">
+            <span className="font-bold text-primary">النقاط: </span>
+            <span className="text-gray-700">{question.points}</span>
+          </div>
+        </div>
+
         <AnswerTimer 
           duration={game.answerTime} 
           onTimeEnd={handleTimeEnd} 

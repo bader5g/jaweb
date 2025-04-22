@@ -1,6 +1,6 @@
 import { useGame } from "@/lib/gameContext";
 import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { GameState } from "@/lib/types";
 import ScoreBoard from "@/components/ScoreBoard";
 import GameCategoryCard from "@/components/GameCategoryCard";
@@ -77,8 +77,17 @@ export default function GamePlay() {
             {game.state === GameState.CATEGORY_SELECTION && (
               <div id="category-selection" className="staggered-animation">
                 <ScoreBoard />
-                <div className="mt-8 mb-4">
-                  </div>
+                <div className="mt-8 mb-4 flex justify-between items-center">
+                  <Link to="/questions">
+                    <Button className="flex items-center space-x-2 bg-primary/80 hover:bg-primary">
+                      <span className="ml-2">بنك الأسئلة</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                      </svg>
+                    </Button>
+                  </Link>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {game.categories.map((category) => (
                     <div className="animate-slide-up" key={category.id}>

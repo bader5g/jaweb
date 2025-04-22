@@ -55,19 +55,33 @@ export default function Questions() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
+  // تعريف نوع البيانات
+  type QuestionType = {
+    id: number;
+    text: string;
+    answer: string;
+    categoryId: number;
+    categoryName: string;
+    difficulty: string;
+  };
+
+  type CategoryType = {
+    id: number;
+    name: string;
+  };
+
   // استعلام للحصول على قائمة التصنيفات
-  const { data: categories = [] } = useQuery<any[]>({
-    queryKey: ['/api/categories'],
+  const categoriesQuery = useQuery({
+    queryKey: ['/api/categories']
   });
+  const categories = Array.isArray(categoriesQuery.data) ? categoriesQuery.data : [];
 
   // استعلام للحصول على قائمة الأسئلة
-  const { data: questions = [], isLoading } = useQuery<any[]>({
-    queryKey: ['/api/questions'],
-    // استخدام البيانات الافتراضية في حالة حدوث خطأ
-    onError: () => {
-      console.log("فشل في تحميل الأسئلة من الخادم، استخدام الأسئلة الافتراضية");
-    }
+  const questionsQuery = useQuery({
+    queryKey: ['/api/questions']
   });
+  const questions = Array.isArray(questionsQuery.data) ? questionsQuery.data : [];
+  const isLoading = questionsQuery.isLoading;
 
   // تصفية الأسئلة حسب البحث والتصنيف والصعوبة
   const filteredQuestions = questions.filter((question: any) => {

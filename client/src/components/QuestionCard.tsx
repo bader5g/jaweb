@@ -1,82 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useGame } from "@/lib/gameContext";
 import { Button } from "@/components/ui/button";
 import AnswerTimer from "@/components/AnswerTimer";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
+import { Question } from "@/lib/types";
+import { ArrowLeft } from "lucide-react";
 
-export default function QuestionCard() {
-  const { game, getCurrentQuestion, answerQuestion, updateTeamScore } = useGame();
-  const [showAnswerOptions, setShowAnswerOptions] = useState(false);
-  const [timerRunning, setTimerRunning] = useState(true);
-  const { toast } = useToast();
-
-  console.log("تحميل مكون QuestionCard، حالة اللعبة:", game?.state);
-
-  useEffect(() => {
-    console.log("وصلنا إلى مكون عرض السؤال، حالة اللعبة:", game?.state);
-    
-    // تحقق من أن اللعبة في وضع السؤال
-    if (game && game.state !== "question") {
-      console.log("حالة اللعبة ليست 'question'، الحالة الحالية:", game.state);
-    }
-  }, [game?.state]);
-
-  // التحقق من وجود بيانات اللعبة
-  if (!game) {
-    console.log("لا توجد بيانات لعبة!");
-    return null;
-  }
-
-  // الحصول على السؤال الحالي
-  const question = getCurrentQuestion();
-  console.log("السؤال الحالي:", question);
+// تم إنشاء مكون QuestionDisplay منفصل لتجنب التحديثات المتكررة
+const QuestionDisplay = memo(({ 
+  question, 
+  game, 
+  onShowAnswer, 
+  showAnswerOptions, 
+  onTeamAnswer, 
+  timerRunning,
+  onTimeEnd 
+}: { 
+  question: Question, 
+  game: any, 
+  onShowAnswer: () => void, 
+  showAnswerOptions: boolean, 
+  onTeamAnswer: (teamId: number | null) => void,
+  timerRunning: boolean,
+  onTimeEnd: () => void
+}) => {
+  if (!question) return null;
   
-  if (!question) {
-    console.log("لا يوجد سؤال متاح لهذه الفئة والمستوى والفريق الحالي!");
-    
-    toast({
-      title: "لا يوجد سؤال",
-      description: "لا يوجد سؤال متاح لهذه الفئة والمستوى والفريق الحالي",
-      variant: "destructive"
-    });
-    
-    return (
-      <div className="text-center p-10 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
-        <h2 className="text-xl font-bold text-red-600 mb-4">لا يوجد سؤال متاح!</h2>
-        <p className="text-gray-600 mb-6">لا يوجد سؤال متاح لـ {game.currentCategory} بمستوى {game.currentDifficulty}</p>
-      </div>
-    );
-  }
-
-  const handleShowAnswer = () => {
-    setShowAnswerOptions(true);
-    setTimerRunning(false);
-  };
-
-  const handleTeamAnswer = (teamId: number | null) => {
-    if (teamId) {
-      console.log("إجابة صحيحة للفريق:", teamId);
-      answerQuestion(question.id, true);
-      updateTeamScore(teamId, question.points);
-    } else {
-      console.log("إجابة خاطئة - لا أحد حصل على نقاط");
-      answerQuestion(question.id, false);
-    }
-  };
-
-  const handleTimeEnd = () => {
-    console.log("انتهى الوقت!");
-    setShowAnswerOptions(true);
-  };
-
-  // إعادة ضبط حالة المكون عند تغير السؤال
-  useEffect(() => {
-    console.log("تغير السؤال:", question?.id);
-    setTimerRunning(true);
-    setShowAnswerOptions(false);
-  }, [question?.id]);
-
   return (
     <div className="space-y-6">
       <div className="mb-6">
@@ -104,7 +53,7 @@ export default function QuestionCard() {
 
         <AnswerTimer 
           duration={game.answerTime} 
-          onTimeEnd={handleTimeEnd} 
+          onTimeEnd={onTimeEnd}
           isRunning={timerRunning} 
         />
       </div>
@@ -119,7 +68,7 @@ export default function QuestionCard() {
         {!showAnswerOptions ? (
           <div className="flex justify-center">
             <Button
-              onClick={handleShowAnswer}
+              onClick={onShowAnswer}
               className="py-3 px-8 bg-primary text-white text-xl font-bold rounded-xl hover:bg-primary/90 transition"
             >
               إظهار الإجابة
@@ -137,21 +86,21 @@ export default function QuestionCard() {
 
             <div className="grid grid-cols-3 gap-4">
               <Button
-                onClick={() => handleTeamAnswer(game.team1.id)}
+                onClick={() => onTeamAnswer(game.team1.id)}
                 className="py-6 bg-blue-500 hover:bg-blue-600 text-white text-lg font-bold rounded-xl"
               >
                 {game.team1.name}
               </Button>
 
               <Button
-                onClick={() => handleTeamAnswer(game.team2.id)}
+                onClick={() => onTeamAnswer(game.team2.id)}
                 className="py-6 bg-red-500 hover:bg-red-600 text-white text-lg font-bold rounded-xl"
               >
                 {game.team2.name}
               </Button>
 
               <Button
-                onClick={() => handleTeamAnswer(null)}
+                onClick={() => onTeamAnswer(null)}
                 className="py-6 bg-gray-500 hover:bg-gray-600 text-white text-lg font-bold rounded-xl"
               >
                 لا أحد
@@ -162,4 +111,63 @@ export default function QuestionCard() {
       </div>
     </div>
   );
+});
+
+// المكون الرئيسي
+function QuestionCard() {
+  const { game, getCurrentQuestion, answerQuestion, updateTeamScore } = useGame();
+  const [showAnswerOptions, setShowAnswerOptions] = useState(false);
+  const [timerRunning, setTimerRunning] = useState(true);
+
+  // التحقق من وجود بيانات اللعبة
+  if (!game) {
+    return null;
+  }
+
+  // الحصول على السؤال الحالي
+  const question = getCurrentQuestion();
+  
+  const handleShowAnswer = () => {
+    setShowAnswerOptions(true);
+    setTimerRunning(false);
+  };
+
+  const handleTeamAnswer = (teamId: number | null) => {
+    if (!question) return;
+    
+    if (teamId) {
+      answerQuestion(question.id, true);
+      updateTeamScore(teamId, question.points);
+    } else {
+      answerQuestion(question.id, false);
+    }
+  };
+
+  const handleTimeEnd = () => {
+    setShowAnswerOptions(true);
+  };
+
+  // رسالة عندما لا يوجد سؤال متاح
+  if (!question) {
+    return (
+      <div className="text-center p-10 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+        <h2 className="text-xl font-bold text-red-600 mb-4">لا يوجد سؤال متاح!</h2>
+        <p className="text-gray-600 mb-6">لا يوجد سؤال متاح لـ {game.currentCategory} بمستوى {game.currentDifficulty}</p>
+      </div>
+    );
+  }
+
+  return (
+    <QuestionDisplay 
+      question={question}
+      game={game}
+      onShowAnswer={handleShowAnswer}
+      showAnswerOptions={showAnswerOptions}
+      onTeamAnswer={handleTeamAnswer}
+      timerRunning={timerRunning}
+      onTimeEnd={handleTimeEnd}
+    />
+  );
 }
+
+export default QuestionCard;

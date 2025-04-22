@@ -7,6 +7,7 @@ import NotFound from "./pages/not-found";
 import Home from "./pages/Home";
 import GameSetup from "./pages/GameSetup";
 import GamePlay from "./pages/GamePlay";
+import Questions from "./pages/Questions";
 import { GameProvider } from "./lib/gameContext";
 import { AuthProvider } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
@@ -23,6 +24,7 @@ function Router() {
           <Route path="/" component={Home} />
           <ProtectedRoute path="/setup" component={GameSetup} />
           <ProtectedRoute path="/play" component={GamePlay} />
+          <ProtectedRoute path="/questions" component={Questions} />
           <ProtectedRoute path="/admin/categories" component={AdminCategories} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />

@@ -353,6 +353,8 @@ export class DatabaseStorage implements IStorage {
 
   async updateCurrentDifficulty(id: string, difficulty: string): Promise<Game | undefined> {
     try {
+      console.log(`[STORAGE] تحديث مستوى الصعوبة للعبة ${id} إلى ${difficulty}`);
+      
       // تحديث مستوى الصعوبة الحالي في اللعبة
       const [updatedGame] = await db
         .update(games)
@@ -361,13 +363,24 @@ export class DatabaseStorage implements IStorage {
         .returning();
       
       if (!updatedGame) {
+        console.log(`[STORAGE] لم يتم العثور على اللعبة ${id}`);
         return undefined;
       }
       
+      console.log(`[STORAGE] تم التحديث بنجاح، جاري استرجاع اللعبة...`);
+      
       // استرجاع اللعبة المحدثة بالكامل
-      return await this.getGame(id);
+      const fullGame = await this.getGame(id);
+      
+      if (fullGame) {
+        console.log(`[STORAGE] تم استرجاع اللعبة، الحالة: ${fullGame.state}, المستوى الحالي: ${fullGame.currentDifficulty}`);
+      } else {
+        console.log(`[STORAGE] فشل استرجاع اللعبة المحدثة!`);
+      }
+      
+      return fullGame;
     } catch (error) {
-      console.error('Error updating current difficulty:', error);
+      console.error('[STORAGE] خطأ في تحديث مستوى الصعوبة:', error);
       throw error;
     }
   }

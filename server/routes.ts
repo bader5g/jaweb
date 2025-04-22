@@ -224,20 +224,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/games/:id/current-difficulty', async (req, res) => {
     try {
       const gameId = req.params.id;
+      console.log(`[DEBUG] تحديث مستوى الصعوبة للعبة ${gameId}`);
+      
       const schema = z.object({
         difficulty: z.string()
       });
       
       const { difficulty } = schema.parse(req.body);
+      console.log(`[DEBUG] المستوى المطلوب: ${difficulty}`);
+      
       const game = await storage.updateCurrentDifficulty(gameId, difficulty);
       
       if (!game) {
+        console.log(`[ERROR] اللعبة غير موجودة: ${gameId}`);
         return res.status(404).json({ error: 'Game not found' });
       }
       
+      console.log(`[DEBUG] تم تحديث حالة اللعبة إلى: ${game.state}`);
+      console.log(`[DEBUG] المستوى الحالي: ${game.currentDifficulty}`);
+      
       broadcastGame(gameId, game);
       res.json(game);
+      console.log(`[DEBUG] تم إرسال استجابة ناجحة لتحديث المستوى`);
     } catch (error) {
+      console.error(`[ERROR] خطأ في تحديث مستوى الصعوبة:`, error);
       res.status(400).json({ error: (error as Error).message });
     }
   });

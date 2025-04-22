@@ -15,6 +15,7 @@ interface GameCategoryCardProps {
 
 export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   const { game, selectCategory, selectDifficulty, answerQuestion } = useGame();
+  const [, navigate] = useLocation();
 
   // تحديد الأيقونة المناسبة بناءً على اسم الفئة
   const getIcon = (iconName: string) => {
@@ -161,12 +162,18 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
   };
 
   // معالجة اختيار المستوى
-  const handleSelectDifficulty = (difficulty: string) => {
+  const handleSelectDifficulty = async (difficulty: string) => {
     if (!isCompleted) {
-      selectCategory(category.name);
-      setTimeout(() => {
-        selectDifficulty(difficulty);
-      }, 200);
+      // أولاً: اختيار الفئة
+      const categorySuccess = await selectCategory(category.name);
+      if (categorySuccess) {
+        // ثانياً: اختيار مستوى الصعوبة
+        const difficultySuccess = await selectDifficulty(difficulty);
+        if (difficultySuccess) {
+          // توجيه المستخدم إلى صفحة السؤال
+          navigate('/question');
+        }
+      }
     }
   };
 
@@ -314,10 +321,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {/* أيقونات المستوى 1 */}
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
-                      await selectCategory(category.name);
-                      await selectDifficulty(DifficultyLevel.EASY);
+                      handleSelectDifficulty(DifficultyLevel.EASY);
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
@@ -332,10 +338,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                 </button>
 
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)) {
-                      await selectCategory(category.name);
-                      await selectDifficulty(DifficultyLevel.EASY);
+                      handleSelectDifficulty(DifficultyLevel.EASY);
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.EASY)}
@@ -353,10 +358,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {/* أيقونات المستوى 2 */}
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
-                      await selectCategory(category.name);
-                      await selectDifficulty(DifficultyLevel.MEDIUM);
+                      handleSelectDifficulty(DifficultyLevel.MEDIUM);
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
@@ -371,10 +375,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                 </button>
 
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)) {
-                      await selectCategory(category.name);
-                      await selectDifficulty(DifficultyLevel.MEDIUM);
+                      handleSelectDifficulty(DifficultyLevel.MEDIUM);
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.MEDIUM)}
@@ -392,10 +395,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
               {/* أيقونات المستوى 3 */}
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
-                      await selectCategory(category.name);
-                      await selectDifficulty(DifficultyLevel.HARD);
+                      handleSelectDifficulty(DifficultyLevel.HARD);
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}
@@ -410,10 +412,9 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
                 </button>
 
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)) {
-                      await selectCategory(category.name);
-                      await selectDifficulty(DifficultyLevel.HARD);
+                      handleSelectDifficulty(DifficultyLevel.HARD);
                     }
                   }}
                   disabled={!isQuestionAvailableForCurrentTeam(DifficultyLevel.HARD)}

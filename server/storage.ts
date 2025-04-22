@@ -460,27 +460,40 @@ export class DatabaseStorage implements IStorage {
   // إنشاء سؤال جديد
   async createQuestion(questionData: any): Promise<Question> {
     try {
+      console.log('[STORAGE] بيانات السؤال المستلمة:', questionData);
+      
+      // ضمان وجود القيم الأساسية والتحقق منها
+      if (!questionData.text || !questionData.answer || !questionData.difficulty) {
+        throw new Error('بيانات السؤال غير مكتملة: النص والإجابة ومستوى الصعوبة مطلوبة');
+      }
+      
+      const insertData = {
+        text: questionData.text,
+        answer: questionData.answer,
+        difficulty: questionData.difficulty,
+        categoryId: questionData.categoryId ? parseInt(questionData.categoryId) : null,
+        isActive: questionData.isActive !== undefined ? questionData.isActive : true,
+        mediaType: questionData.mediaType || '',
+        mediaUrl: questionData.mediaUrl || null,
+        points: questionData.points || 1,
+        isAnswered: false,
+        gameId: '',
+        teamId: null,
+        explanation: questionData.explanation || null,
+        createdAt: new Date()
+      };
+      
+      console.log('[STORAGE] البيانات التي سيتم إدخالها:', insertData);
+      
       const [newQuestion] = await db
         .insert(questions)
-        .values({
-          text: questionData.text,
-          answer: questionData.answer,
-          difficulty: questionData.difficulty,
-          categoryId: questionData.categoryId,
-          isActive: questionData.isActive !== undefined ? questionData.isActive : true,
-          mediaType: questionData.mediaType || '',
-          mediaUrl: questionData.mediaUrl || null,
-          points: questionData.points || 1,
-          isAnswered: false,
-          gameId: '',
-          teamId: null,
-          explanation: questionData.explanation || null,
-          createdAt: new Date()
-        })
+        .values(insertData)
         .returning();
+        
+      console.log('[STORAGE] تم إنشاء السؤال بنجاح:', newQuestion);
       return newQuestion;
     } catch (error) {
-      console.error('Error creating new question:', error);
+      console.error('[STORAGE] خطأ في إنشاء سؤال جديد:', error);
       throw error;
     }
   }

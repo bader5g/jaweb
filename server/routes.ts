@@ -141,10 +141,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // إنشاء سؤال جديد
   app.post('/api/admin/questions', async (req, res) => {
     try {
+      console.log('تم استلام طلب إنشاء سؤال جديد:', req.body);
       const newQuestion = req.body;
+      
+      if (!newQuestion.text || !newQuestion.answer || !newQuestion.difficulty || !newQuestion.categoryId) {
+        console.error('البيانات المطلوبة غير مكتملة:', newQuestion);
+        return res.status(400).json({ error: "البيانات المطلوبة غير مكتملة" });
+      }
+      
+      console.log('جاري محاولة إنشاء السؤال في قاعدة البيانات...');
       const question = await storage.createQuestion(newQuestion);
+      console.log('تم إنشاء السؤال بنجاح:', question);
       res.status(201).json(question);
     } catch (error) {
+      console.error('خطأ أثناء إنشاء السؤال:', error);
       res.status(500).json({ error: "حدث خطأ أثناء إنشاء السؤال" });
     }
   });

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, json, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -31,6 +31,25 @@ export const UserLevel = {
 } as const;
 
 export type UserLevelType = typeof UserLevel[keyof typeof UserLevel];
+
+// Define user roles
+export const UserRole = {
+  USER: "user",
+  ADMIN: "admin",
+  SUPER_ADMIN: "super_admin",
+} as const;
+
+export type UserRoleType = typeof UserRole[keyof typeof UserRole];
+
+// Define media types for questions
+export const MediaType = {
+  NONE: "none",
+  IMAGE: "image",
+  VIDEO: "video",
+  AUDIO: "audio",
+} as const;
+
+export type MediaTypeType = typeof MediaType[keyof typeof MediaType];
 
 // Teams table
 export const teams = pgTable("teams", {
@@ -81,9 +100,13 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   points: integer("points").notNull().default(0),
   level: text("level").notNull().default(UserLevel.BRONZE),
+  role: text("role").notNull().default(UserRole.USER),
   gamesPlayed: integer("games_played").notNull().default(0),
   gamesWon: integer("games_won").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  avatarUrl: text("avatar_url"),
   created: timestamp("created").notNull().defaultNow(),
+  lastLogin: timestamp("last_login"),
 });
 
 // Questions table
@@ -97,6 +120,14 @@ export const questions = pgTable("questions", {
   gameId: text("game_id").notNull(),
   teamId: integer("team_id").references(() => teams.id),
   isAnswered: boolean("is_answered").notNull().default(false),
+  mediaType: text("media_type").default(MediaType.NONE).notNull(), // نوع الوسائط: none, image, video, audio
+  mediaUrl: text("media_url"),
+  explanation: text("explanation"), // شرح وتفسير الإجابة
+  hintText: text("hint_text"), // تلميح يمكن استخدامه خلال اللعبة
+  isActive: boolean("is_active").default(true).notNull(),
+  isApproved: boolean("is_approved").default(false).notNull(), // للموافقة على الأسئلة المضافة من المستخدمين
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Game Logs table to track game activity
@@ -109,6 +140,48 @@ export const gameLogs = pgTable("game_logs", {
   questionId: integer("question_id").references(() => questions.id), // معرف السؤال (اختياري)
   categoryId: integer("category_id").references(() => categories.id), // معرف الفئة (اختياري)
   details: json("details"), // تفاصيل إضافية عن الإجراء
+});
+
+// Help Options table for team assistance features
+export const helpOptions = pgTable("help_options", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // اسم وسيلة المساعدة
+  nameAr: text("name_ar").notNull(), // الاسم بالعربية
+  description: text("description"), // وصف وسيلة المساعدة
+  descriptionAr: text("description_ar"), // الوصف بالعربية
+  icon: text("icon").notNull(), // أيقونة وسيلة المساعدة
+  isActive: boolean("is_active").default(true).notNull(), // هل وسيلة المساعدة نشطة
+  usageLimit: integer("usage_limit").default(1).notNull(), // عدد مرات استخدام المساعدة في اللعبة الواحدة
+  effect: text("effect").notNull(), // تأثير المساعدة (مثل: remove_two_options, ask_audience, etc.)
+  createdBy: integer("created_by").references(() => users.id), // المستخدم الذي أضاف وسيلة المساعدة
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Settings table for app configurations
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(), // مفتاح الإعداد
+  value: text("value").notNull(), // قيمة الإعداد
+  description: text("description"), // وصف الإعداد
+  group: text("group").notNull(), // مجموعة الإعدادات (مثل: theme, game, help_options)
+  dataType: text("data_type").notNull(), // نوع البيانات (string, number, boolean, json)
+  isPublic: boolean("is_public").default(true).notNull(), // هل الإعداد متاح للعرض العام
+  updatedBy: integer("updated_by").references(() => users.id), // آخر مستخدم قام بتحديث الإعداد
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Media table for uploaded files
+export const media = pgTable("media", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(), // اسم الملف
+  filepath: text("filepath").notNull(), // مسار الملف
+  mimetype: text("mimetype").notNull(), // نوع الوسائط
+  size: integer("size").notNull(), // حجم الملف
+  type: text("type").notNull(), // نوع المحتوى (avatar, question_media, category_image)
+  entityId: integer("entity_id"), // معرف الكيان المرتبط (مثل معرف المستخدم أو السؤال)
+  entityType: text("entity_type"), // نوع الكيان المرتبط (user, question, category)
+  uploadedBy: integer("uploaded_by").references(() => users.id), // المستخدم الذي رفع الملف
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 
 // Type definition for category schema children
@@ -249,6 +322,9 @@ export type Category = typeof categories.$inferSelect;
 export type Question = typeof questions.$inferSelect;
 export type DbUser = typeof users.$inferSelect;
 export type GameLog = typeof gameLogs.$inferSelect;
+export type HelpOption = typeof helpOptions.$inferSelect;
+export type Setting = typeof settings.$inferSelect;
+export type Media = typeof media.$inferSelect;
 
 // Game log schema
 export const gameLogSchema = z.object({

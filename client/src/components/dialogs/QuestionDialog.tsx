@@ -25,9 +25,9 @@ interface QuestionDialogProps {
     categoryId: number | null;
     isActive: boolean;
     mediaType?: string;
-    mediaUrl?: string;
+    mediaUrl?: string | null;
     points: number;
-  };
+  } | null;
   isEdit?: boolean;
 }
 

@@ -69,7 +69,19 @@ export default function AdminQuestions() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
   const [isQuestionDialogOpen, setIsQuestionDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  const [editingQuestion, setEditingQuestion] = useState<QuestionType | null>(null);
+  type EditableQuestion = {
+    id: number;
+    text: string;
+    answer: string;
+    difficulty: string;
+    categoryId: number | null;
+    isActive: boolean;
+    mediaType?: string;
+    mediaUrl?: string | null;
+    points: number;
+  };
+  
+  const [editingQuestion, setEditingQuestion] = useState<EditableQuestion | null>(null);
   const [showDetails, setShowDetails] = useState<number | null>(null);
 
   // جلب الأسئلة
@@ -398,7 +410,7 @@ export default function AdminQuestions() {
                               categoryId: question.categoryId,
                               isActive: question.isActive,
                               mediaType: question.mediaType,
-                              mediaUrl: question.mediaUrl || undefined,
+                              mediaUrl: question.mediaUrl || null,
                               points: question.points
                             });
                             setIsQuestionDialogOpen(true);
@@ -525,7 +537,7 @@ export default function AdminQuestions() {
                                 categoryId: question.categoryId,
                                 isActive: question.isActive,
                                 mediaType: question.mediaType,
-                                mediaUrl: question.mediaUrl || undefined,
+                                mediaUrl: question.mediaUrl || null,
                                 points: question.points
                               });
                               setIsQuestionDialogOpen(true);
@@ -658,7 +670,7 @@ export default function AdminQuestions() {
                           categoryId: question.categoryId,
                           isActive: question.isActive,
                           mediaType: question.mediaType,
-                          mediaUrl: question.mediaUrl || undefined,
+                          mediaUrl: question.mediaUrl || null,
                           points: question.points
                         });
                         setIsQuestionDialogOpen(true);

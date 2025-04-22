@@ -131,10 +131,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // الحصول على الأسئلة للوحة التحكم
   app.get('/api/admin/questions', async (_req, res) => {
     try {
-      // نستخدم مؤقتًا مصفوفة فارغة حتى يتم تنفيذ الدالة الفعلية
-      res.json([]);
+      const questions = await storage.getAllQuestions();
+      res.json(questions);
     } catch (error) {
       res.status(500).json({ error: "حدث خطأ أثناء البحث عن الأسئلة" });
+    }
+  });
+  
+  // إنشاء سؤال جديد
+  app.post('/api/admin/questions', async (req, res) => {
+    try {
+      const newQuestion = req.body;
+      const question = await storage.createQuestion(newQuestion);
+      res.status(201).json(question);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء إنشاء السؤال" });
+    }
+  });
+  
+  // تحديث سؤال
+  app.put('/api/admin/questions/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedData = req.body;
+      const question = await storage.updateQuestion(id, updatedData);
+      
+      if (!question) {
+        return res.status(404).json({ error: "السؤال غير موجود" });
+      }
+      
+      res.json(question);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء تحديث السؤال" });
+    }
+  });
+  
+  // حذف سؤال
+  app.delete('/api/admin/questions/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteQuestion(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "السؤال غير موجود" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء حذف السؤال" });
+    }
+  });
+  
+  // الحصول على سؤال بواسطة المعرف
+  app.get('/api/questions/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const question = await storage.getQuestionById(id);
+      
+      if (!question) {
+        return res.status(404).json({ error: "السؤال غير موجود" });
+      }
+      
+      res.json(question);
+    } catch (error) {
+      res.status(500).json({ error: "حدث خطأ أثناء البحث عن السؤال" });
     }
   });
   

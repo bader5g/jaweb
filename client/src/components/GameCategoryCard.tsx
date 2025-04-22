@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useGame } from "@/lib/gameContext";
 import { Category, Question, DifficultyLevel } from "@/lib/types";
 import { motion, AnimatePresence } from 'framer-motion';

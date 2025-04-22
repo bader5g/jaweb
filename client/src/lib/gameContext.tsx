@@ -11,8 +11,8 @@ interface GameContextType {
   createGame: (categoryCount: number, team1Name: string, team2Name: string, answerTime: number, gameName?: string, selectedCategories?: number[]) => Promise<Game | null>;
   joinGame: (gameId: string) => void;
   startGame: () => Promise<void>;
-  selectCategory: (categoryName: string) => Promise<void>;
-  selectDifficulty: (difficulty: string) => Promise<void>;
+  selectCategory: (categoryName: string) => Promise<boolean | undefined>;
+  selectDifficulty: (difficulty: string) => Promise<boolean | undefined>;
   answerQuestion: (questionId: number, isCorrect: boolean) => Promise<void>;
   updateTeamScore: (teamId: number, changeAmount: number) => Promise<void>;
   endGame: () => Promise<void>;
@@ -267,6 +267,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         teamName: getCurrentTeam()?.name
       }, game.currentTeamId, undefined, category?.id);
       
+      return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار الفئة';
       setError(errorMessage);
@@ -275,6 +276,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         description: errorMessage,
         variant: "destructive"
       });
+      return false;
     }
   };
 
@@ -293,6 +295,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         teamName: getCurrentTeam()?.name
       }, game.currentTeamId, undefined, category?.id);
       
+      return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء اختيار المستوى';
       setError(errorMessage);
@@ -301,6 +304,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         description: errorMessage,
         variant: "destructive"
       });
+      return false;
     }
   };
 

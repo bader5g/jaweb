@@ -289,37 +289,8 @@ export default function GameCategoryCard({ category }: GameCategoryCardProps) {
 
 
 
-          <div className="flex justify-between items-center text-sm text-gray-700">
-            <div className="flex items-center">
-              <div className="h-3 w-3 rounded-full bg-blue-600 mr-2"></div>
-              <span>النقاط: <span className="font-bold">{points[DifficultyLevel.EASY]}</span></span>
-            </div>
-
-            <div className="flex items-center">
-              <div className="h-3 w-3 rounded-full bg-red-600 mr-2"></div>
-              <span>النقاط: <span className="font-bold">{points[DifficultyLevel.HARD]}</span></span>
-            </div>
-          </div>
-
           {/* عرض أسئلة الفئة - دائماً ظاهرة */}
           <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="mb-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                {getIcon(iconName)}
-                <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
-              </div>
-            </div>
-            
-            {/* عرض دور الفريق الحالي - في الأعلى */}
-            <div className="p-3 bg-primary-50 rounded-xl mb-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Star className="h-5 w-5 text-primary animate-pulse" />
-                <p className="font-bold text-gray-800">
-                  دور الفريق: <span className="text-primary">{currentTeamName}</span>
-                </p>
-                <Star className="h-5 w-5 text-primary animate-pulse" />
-              </div>
-            </div>
 
             <div className="space-y-3">
               {/* أيقونات المستوى 1 */}

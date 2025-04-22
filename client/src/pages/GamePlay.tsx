@@ -75,13 +75,7 @@ export default function GamePlay() {
               <div id="category-selection" className="staggered-animation">
                 <ScoreBoard />
                 <div className="mt-8 mb-4">
-                  <h2 className="text-2xl md:text-3xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-                    اختر فئة
-                  </h2>
-                  <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
-                    كل فئة تحتوي على 6 أسئلة (3 لكل فريق). اختر فئة للبدء.
-                  </p>
-                </div>
+                  </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {game.categories.map((category) => (
                     <div className="animate-slide-up" key={category.id}>
@@ -115,9 +109,7 @@ export default function GamePlay() {
           </div>
         </div>
         
-        <footer className="text-center text-gray-600 text-sm mt-4">
-          <p>{`وقت إجابة السؤال: ${game.answerTime} ثانية`}</p>
-        </footer>
+        
       </div>
     </div>
   );

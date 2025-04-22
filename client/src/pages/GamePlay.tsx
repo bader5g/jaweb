@@ -51,7 +51,7 @@ export default function GamePlay() {
             <ArrowLeft className="h-5 w-5" />
             <span>العودة للرئيسية</span>
           </Button>
-          
+
           <div className="flex items-center">
             <span className="bg-white/80 text-primary px-4 py-1 rounded-full text-sm font-medium shadow">
               معرف اللعبة: {game.id.substring(0, 8)}
@@ -71,10 +71,10 @@ export default function GamePlay() {
         <div className="bg-glass rounded-2xl p-6 shadow-lg border border-white/30 relative overflow-hidden mb-8">
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-3xl rounded-full"></div>
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-400/10 blur-3xl rounded-full"></div>
-          
+
           <div className="relative z-10">
             {/* عرض شاشات مختلفة بناءً على حالة اللعبة */}
-            {game.state === GameState.CATEGORY_SELECTION && (
+            {(game.state === GameState.CATEGORY_SELECTION || game.state === GameState.DIFFICULTY_SELECTION) && (
               <div id="category-selection" className="staggered-animation">
                 <ScoreBoard />
                 <div className="mt-8 mb-4 flex justify-between items-center">
@@ -98,13 +98,6 @@ export default function GamePlay() {
               </div>
             )}
 
-            {game.state === GameState.DIFFICULTY_SELECTION && (
-              <div className="animate-slide-up">
-                <ScoreBoard />
-                <DifficultySelector />
-              </div>
-            )}
-
             {game.state === GameState.QUESTION && (
               <div id="question-screen" className="animate-slide-up">
                 <ScoreBoard />
@@ -120,8 +113,8 @@ export default function GamePlay() {
             )}
           </div>
         </div>
-        
-        
+
+
       </div>
     </div>
   );
